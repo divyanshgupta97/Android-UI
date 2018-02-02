@@ -14,9 +14,11 @@
      limitations under the License.
 -->
 
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">Aero Dragon</string>
-    <string name="app_name_2">Aero Dragon - Configuration</string>
+<resources>
+    <string name="app_name">Mars Rover</string>
+    <string name="app_name_2">Mars Rover - Configuration</string>
+    
+    <string name="action_bluetooth">Test Bluetooth</string>
 
     <!--  BluetoothChat -->
     <string name="send">Send</string>
@@ -26,13 +28,12 @@
     <string name="bt_already_on">Bluetooth is already switched on.</string>
     <string name="bt_already_off">Bluetooth is already switched off.</string>
     <string name="title_connecting">Connecting...</string>
-    <string name="title_connected_to">Connected to <xliff:g id="device_name">%1$s</xliff:g> --> </string>
+    <string name="title_connected_to">Connected to</string>
     <string name="title_not_connected">Not Connected</string>
     <string name="title_send_f1">
-        Connected to <xliff:g id="device_name">%1$s</xliff:g> : Run function 1:
         </string>
     <string name="title_send_f2">
-        Connected to <xliff:g id="device_name">%1$s</xliff:g> : Run function 2:
+        Connected to  : Run function 2:
         </string>
 
     <!--  DeviceListActivity -->

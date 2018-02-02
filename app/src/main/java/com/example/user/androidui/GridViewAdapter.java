@@ -14,15 +14,16 @@ import android.widget.Toast;
 
 public class GridViewAdapter extends BaseAdapter {
 
+    Toast mToast;
     Context mContext;
     int[] mItems;
 
-    public GridViewAdapter(Context context, int num){
+    public GridViewAdapter(Context context, int numCells){
         mContext = context;
-        mItems = new int[num];
+        mItems = new int[numCells];
 
-        for(int i=0; i < num; ++i)
-            mItems[i] = i;
+        for(int i = 0; i < numCells; ++i)
+            mItems[i] = (numCells - 1) - i;
     }
     @Override
     public int getCount() {
@@ -51,7 +52,10 @@ public class GridViewAdapter extends BaseAdapter {
 
             @Override
             public void onClick(View v) {
-                Toast.makeText(mContext, "Cell No. " + mItems[index], Toast.LENGTH_SHORT).show();
+                if(mToast != null)
+                    mToast.cancel();
+                mToast = Toast.makeText(mContext, "Cell No. " + mItems[index], Toast.LENGTH_SHORT);
+                mToast.show();
             }
 
         });
