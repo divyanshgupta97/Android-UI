@@ -37,77 +37,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mGridView = (GridView) findViewById(R.id.maze);
-        xAxis = (GridView) findViewById(R.id.x_axis);
-        yAxis = (GridView) findViewById(R.id.y_axis);
-
-        GridViewAdapter gridViewAdapter = new GridViewAdapter(MainActivity.this, NUM_ROWS * NUM_COLS);
-        GridAxisAdapter xAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_COLS, false);
-        GridAxisAdapter yAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_ROWS, true);
-
-        mGridView.setNumColumns(NUM_COLS);
-        xAxis.setNumColumns(NUM_COLS);
-        yAxis.setNumColumns(1);
-
-        mGridView.setAdapter(gridViewAdapter);
-        xAxis.setAdapter(xAxisAdapter);
-        yAxis.setAdapter(yAxisAdapter);
-
-//        enableBluetoothBtn = (Button) findViewById(R.id.btn_bluetooth_enable);
-//        disableBluetoothBtn = (Button) findViewById(R.id.btn_bluetooth_disable);
-//        discoverableBlueToothBtn = (Button) findViewById(R.id.btn_bluetooth_discoverable);
-//        listDevicesBtn = (Button) findViewById(R.id.btn_bluetooth_list);
-//        deviceListView = (ListView) findViewById(R.id.device_list);
+//        mGridView = (GridView) findViewById(R.id.maze);
+//        xAxis = (GridView) findViewById(R.id.x_axis);
+//        yAxis = (GridView) findViewById(R.id.y_axis);
 //
-//        final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+//        GridViewAdapter gridViewAdapter = new GridViewAdapter(MainActivity.this, NUM_ROWS * NUM_COLS);
+//        GridAxisAdapter xAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_COLS, false);
+//        GridAxisAdapter yAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_ROWS, true);
 //
-//        if(bluetoothAdapter == null){
-//            Toast.makeText(this, "Bluetooth not supported!", Toast.LENGTH_SHORT).show();
-//            finish();
-//        }
+//        mGridView.setNumColumns(NUM_COLS);
+//        xAxis.setNumColumns(NUM_COLS);
+//        yAxis.setNumColumns(1);
 //
-//
-//        enableBluetoothBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-//                startActivityForResult(intent, REQUEST_ENABLED);
-//            }
-//        });
-//
-//        disableBluetoothBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                bluetoothAdapter.disable();
-//            }
-//        });
-//
-//        discoverableBlueToothBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if(!bluetoothAdapter.isDiscovering()){
-//                    Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-//                    startActivityForResult(intent, REQUEST_DISCOVERABLE);
-//                }
-//            }
-//        });
-//
-//        listDevicesBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-//
-//                ArrayList<String> devices = new ArrayList<String>();
-//
-//                for(BluetoothDevice device: pairedDevices){
-//                    devices.add(device.getName());
-//                }
-//
-//                ArrayAdapter arrayAdapter = new ArrayAdapter(MainActivity.this, R.layout.simple_list_item, devices);
-//
-//                deviceListView.setAdapter(arrayAdapter);
-//            }
-//        });
+//        mGridView.setAdapter(gridViewAdapter);
+//        xAxis.setAdapter(xAxisAdapter);
+//        yAxis.setAdapter(yAxisAdapter);
     }
 
     @Override

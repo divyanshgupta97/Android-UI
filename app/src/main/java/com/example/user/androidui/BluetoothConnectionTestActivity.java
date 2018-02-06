@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -18,13 +19,14 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
 
-public class BluetoothConnectionTestActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
+public class BluetoothConnectionTestActivity extends AppCompatActivity {
     private static final String TAG = "BluetoothTest";
 
     BluetoothAdapter mBluetoothAdapter;
@@ -41,7 +43,7 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
     EditText etSend;
 
     private static final UUID MY_UUID_INSECURE =
-            UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
+            UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     BluetoothDevice mBTDevice;
 
@@ -199,6 +201,8 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
             unregisterReceiver(mBroadcastReceiver2);
             unregisterReceiver(mBroadcastReceiver3);
             unregisterReceiver(mBroadcastReceiver4);
+            Log.d(TAG, "ALL RECEIVERS SUCCESSFULLY UNREGISTERED");
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
         } catch (Exception e){
             Log.d(TAG, "onDestroy: " + e.getMessage());
         }
@@ -222,15 +226,44 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
         incomingMessages = (TextView) findViewById(R.id.incomingMessage);
         messages = new StringBuilder();
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("incomingMessage"));
-
-        //Broadcasts when bond state changes (ie:pairing)
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        registerReceiver(mBroadcastReceiver4, filter);
-
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        lvNewDevices.setOnItemClickListener(this);
+        lvNewDevices.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                // First cancel discovery because its very memory intensive.
+                mBluetoothAdapter.cancelDiscovery();
+
+                Log.d(TAG, "onItemClick: You Clicked on a device.");
+                String deviceName = mBTDiscoveredDevices.get(i).getName();
+                String deviceAddress = mBTDiscoveredDevices.get(i).getAddress();
+
+                Log.d(TAG, "onItemClick: deviceName = " + deviceName);
+                Log.d(TAG, "onItemClick: deviceAddress = " + deviceAddress);
+
+                // Create the bond.
+                //NOTE: Requires API 17+? I think this is JellyBean
+                if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
+                    Log.d(TAG, "Trying to pair with " + deviceName);
+                    mBTDiscoveredDevices.get(i).createBond();
+                }
+            }
+        });
+
+        lvPairedDevices.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                try{
+                    BluetoothDevice bluetoothDevice = mBTPairedDevices.get(i);
+                    Method m = bluetoothDevice.getClass()
+                            .getMethod("removeBond", (Class[]) null);
+                    m.invoke(bluetoothDevice, (Object[]) null);
+                } catch (Exception e){
+                    Log.d(TAG, "Could not unpair: " + e.getMessage());
+                }
+                getPairedDevices();
+            }
+        });
 
 
         btnONOFF.setOnClickListener(new View.OnClickListener() {
@@ -259,11 +292,34 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
         });
 
         getPairedDevices();
+
+
+
+        // Register all fucking receivers here
+
+        // Receiver for incoming message from Remote Bluetooth Device
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("incomingMessage"));
+
+        // Broadcasts when Bluetooth ON/OFF status changes
+        IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(mBroadcastReceiver1, BTIntent);
+
+        // Broadcasts when discoverability mode is changed.
+        IntentFilter intentFilter = new IntentFilter(mBluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+        registerReceiver(mBroadcastReceiver2,intentFilter);
+
+        // Broadcasts when new devices are discovered for pairing
+        IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
+
+        // Broadcasts when Bond State changes (ie:pairing)
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        registerReceiver(mBroadcastReceiver4, filter);
     }
 
     private void getPairedDevices(){
-        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-        mPairedDeviceListAdapter = new DeviceListAdapter(this, R.layout.device_adapter_view, new ArrayList<BluetoothDevice>(pairedDevices));
+        mBTPairedDevices = new ArrayList<>(mBluetoothAdapter.getBondedDevices());
+        mPairedDeviceListAdapter = new DeviceListAdapter(this, R.layout.device_adapter_view, new ArrayList<BluetoothDevice>(mBTPairedDevices));
         lvPairedDevices.setAdapter(mPairedDeviceListAdapter);
     }
 
@@ -303,15 +359,11 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
             Intent enableBTIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivity(enableBTIntent);
 
-            IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-            registerReceiver(mBroadcastReceiver1, BTIntent);
         }
         if(mBluetoothAdapter.isEnabled()){
             Log.d(TAG, "enableDisableBT: disabling BT.");
             mBluetoothAdapter.disable();
 
-            IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-            registerReceiver(mBroadcastReceiver1, BTIntent);
         }
 
     }
@@ -323,9 +375,6 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
         Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
         startActivity(discoverableIntent);
-
-        IntentFilter intentFilter = new IntentFilter(mBluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
-        registerReceiver(mBroadcastReceiver2,intentFilter);
 
     }
 
@@ -340,8 +389,7 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
             checkBTPermissions();
 
             mBluetoothAdapter.startDiscovery();
-            IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
+
         }
         if(!mBluetoothAdapter.isDiscovering()){
 
@@ -349,8 +397,7 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
             checkBTPermissions();
 
             mBluetoothAdapter.startDiscovery();
-            IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
+
         }
     }
 
@@ -373,30 +420,30 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
 //            Log.d(TAG, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
 //        }
     }
-
-    @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        //first cancel discovery because its very memory intensive.
-        mBluetoothAdapter.cancelDiscovery();
-
-        Log.d(TAG, "onItemClick: You Clicked on a device.");
-        String deviceName = mBTDiscoveredDevices.get(i).getName();
-        String deviceAddress = mBTDiscoveredDevices.get(i).getAddress();
-
-        Log.d(TAG, "onItemClick: deviceName = " + deviceName);
-        Log.d(TAG, "onItemClick: deviceAddress = " + deviceAddress);
-
-        //create the bond.
-        //NOTE: Requires API 17+? I think this is JellyBean
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
-            Log.d(TAG, "Trying to pair with " + deviceName);
-
-            mBTDiscoveredDevices.get(i).createBond();
-
-//            if(mBTDiscoveredDevices.get(i).createBond()){
-//                mBTDevice = mBTDiscoveredDevices.get(i);
-//                mBluetoothConnection = new BluetoothConnectionService(this);
-//            }
-        }
-    }
+//
+//    @Override
+//    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//        //first cancel discovery because its very memory intensive.
+//        mBluetoothAdapter.cancelDiscovery();
+//
+//        Log.d(TAG, "onItemClick: You Clicked on a device.");
+//        String deviceName = mBTDiscoveredDevices.get(i).getName();
+//        String deviceAddress = mBTDiscoveredDevices.get(i).getAddress();
+//
+//        Log.d(TAG, "onItemClick: deviceName = " + deviceName);
+//        Log.d(TAG, "onItemClick: deviceAddress = " + deviceAddress);
+//
+//        //create the bond.
+//        //NOTE: Requires API 17+? I think this is JellyBean
+//        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
+//            Log.d(TAG, "Trying to pair with " + deviceName);
+//
+//            mBTDiscoveredDevices.get(i).createBond();
+//
+////            if(mBTDiscoveredDevices.get(i).createBond()){
+////                mBTDevice = mBTDiscoveredDevices.get(i);
+////                mBluetoothConnection = new BluetoothConnectionService(this);
+////            }
+//        }
+//    }
 }
