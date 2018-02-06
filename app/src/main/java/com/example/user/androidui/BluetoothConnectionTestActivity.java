@@ -1,7 +1,5 @@
 package com.example.user.androidui;
 
-import android.Manifest;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -10,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -17,38 +16,54 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.UUID;
 
-/**
- * Created by divyanshgupta on 31/1/18.
- */
 
 public class BluetoothConnectionTestActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
-
     private static final String TAG = "BluetoothTest";
 
-    private BluetoothAdapter mBluetoothAdapter;
-    private Button btnEnableDisable_Discoverable;
+    BluetoothAdapter mBluetoothAdapter;
+    Button btnEnableDisable_Discoverable;
 
-    private BluetoothConnectionService mBluetoothConnectionService;
+    BluetoothConnectionService mBluetoothConnection;
 
-    private static final UUID UUID_INSECURE = UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
+    TextView incomingMessages;
+    StringBuilder messages;
 
-    private BluetoothDevice mRaspberryPi;
+    Button btnStartConnection;
+    Button btnSend;
 
-    private Button btnStartConnection;
-    private Button btnSend;
+    EditText etSend;
 
-    private EditText mEditText;
+    private static final UUID MY_UUID_INSECURE =
+            UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
 
-    public ArrayList<BluetoothDevice> mBTDevices = new ArrayList<>();
+    BluetoothDevice mBTDevice;
 
-    public DeviceListAdapter mDeviceListAdapter;
+    public ArrayList<BluetoothDevice> mBTDiscoveredDevices = new ArrayList<BluetoothDevice>();
+
+    public ArrayList<BluetoothDevice> mBTPairedDevices = new ArrayList<BluetoothDevice>();
+
+    public DeviceListAdapter mDiscoveredDeviceListAdapter;
+
+    public DeviceListAdapter mPairedDeviceListAdapter;
 
     ListView lvNewDevices;
+
+    ListView lvPairedDevices;
+
+    private void removeDiscoveredDevice(BluetoothDevice bluetoothDevice){
+        mBTDiscoveredDevices.remove((BluetoothDevice)bluetoothDevice);
+
+        mDiscoveredDeviceListAdapter = new DeviceListAdapter(this, R.layout.device_adapter_view, mBTDiscoveredDevices);
+        lvNewDevices.setAdapter(mDiscoveredDeviceListAdapter);
+    }
+
 
     // Create a BroadcastReceiver for ACTION_FOUND
     private final BroadcastReceiver mBroadcastReceiver1 = new BroadcastReceiver() {
@@ -129,10 +144,14 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
 
             if (action.equals(BluetoothDevice.ACTION_FOUND)){
                 BluetoothDevice device = intent.getParcelableExtra (BluetoothDevice.EXTRA_DEVICE);
-                mBTDevices.add(device);
+                if(mBTPairedDevices.contains((BluetoothDevice) device) || mBTDiscoveredDevices.contains((BluetoothDevice) device)){
+                    return;
+                }
+                mBTDiscoveredDevices.add(device);
                 Log.d(TAG, "onReceive: " + device.getName() + ": " + device.getAddress());
-                mDeviceListAdapter = new DeviceListAdapter(context, R.layout.device_adapter_view, mBTDevices);
-                lvNewDevices.setAdapter(mDeviceListAdapter);
+                mDiscoveredDeviceListAdapter = new DeviceListAdapter(context, R.layout.device_adapter_view, mBTDiscoveredDevices);
+
+                lvNewDevices.setAdapter(mDiscoveredDeviceListAdapter);
             }
         }
     };
@@ -151,7 +170,11 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
                 //case1: bonded already
                 if (mDevice.getBondState() == BluetoothDevice.BOND_BONDED){
                     Log.d(TAG, "BroadcastReceiver: BOND_BONDED.");
-                    mRaspberryPi = mDevice;
+                    //inside BroadcastReceiver4
+                    mBTDevice = mDevice;
+                    getPairedDevices();
+                    removeDiscoveredDevice(mBTDevice);
+                    mBluetoothConnection = new BluetoothConnectionService(BluetoothConnectionTestActivity.this);
                 }
                 //case2: creating a bone
                 if (mDevice.getBondState() == BluetoothDevice.BOND_BONDING) {
@@ -171,27 +194,35 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
     protected void onDestroy() {
         Log.d(TAG, "onDestroy: called.");
         super.onDestroy();
-        unregisterReceiver(mBroadcastReceiver1);
-        unregisterReceiver(mBroadcastReceiver2);
-        unregisterReceiver(mBroadcastReceiver3);
-        unregisterReceiver(mBroadcastReceiver4);
+        try{
+            unregisterReceiver(mBroadcastReceiver1);
+            unregisterReceiver(mBroadcastReceiver2);
+            unregisterReceiver(mBroadcastReceiver3);
+            unregisterReceiver(mBroadcastReceiver4);
+        } catch (Exception e){
+            Log.d(TAG, "onDestroy: " + e.getMessage());
+        }
+
         //mBluetoothAdapter.cancelDiscovery();
     }
 
-
-
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bluetooth_test);
         Button btnONOFF = (Button) findViewById(R.id.btnONOFF);
         btnEnableDisable_Discoverable = (Button) findViewById(R.id.btnDiscoverable_on_off);
         lvNewDevices = (ListView) findViewById(R.id.lvNewDevices);
-        mBTDevices = new ArrayList<>();
+        lvPairedDevices = (ListView) findViewById(R.id.lvPairedDevices);
 
         btnStartConnection = (Button) findViewById(R.id.btnStartConnection);
         btnSend = (Button) findViewById(R.id.btnSend);
-        mEditText = (EditText) findViewById(R.id.editText);
+        etSend = (EditText) findViewById(R.id.editText);
+
+        incomingMessages = (TextView) findViewById(R.id.incomingMessage);
+        messages = new StringBuilder();
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("incomingMessage"));
 
         //Broadcasts when bond state changes (ie:pairing)
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
@@ -199,7 +230,7 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        lvNewDevices.setOnItemClickListener(BluetoothConnectionTestActivity.this);
+        lvNewDevices.setOnItemClickListener(this);
 
 
         btnONOFF.setOnClickListener(new View.OnClickListener() {
@@ -210,7 +241,7 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
             }
         });
 
-        btnStartConnection.setOnClickListener(new View.OnClickListener(){
+        btnStartConnection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startConnection();
@@ -220,30 +251,48 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                byte[] bytes = mEditText.getText().toString().getBytes(Charset.defaultCharset());
-                mBluetoothConnectionService.write(bytes);
+                byte[] bytes = etSend.getText().toString().getBytes(Charset.defaultCharset());
+                mBluetoothConnection.write(bytes);
+
+                etSend.setText("");
             }
         });
+
+        getPairedDevices();
     }
 
-    /**
-     * Create method for starting connection
-     */
+    private void getPairedDevices(){
+        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+        mPairedDeviceListAdapter = new DeviceListAdapter(this, R.layout.device_adapter_view, new ArrayList<BluetoothDevice>(pairedDevices));
+        lvPairedDevices.setAdapter(mPairedDeviceListAdapter);
+    }
 
+    BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String text = intent.getStringExtra("theMessage");
+            messages.append(text + "\n");
+
+            incomingMessages.setText(messages);
+        }
+    };
+
+    //create method for starting connection
+//***remember the connection will fail and app will crash if you haven't paired first
     public void startConnection(){
-        startBTConnection(mRaspberryPi, UUID_INSECURE);
+        startBTConnection(mBTDevice,MY_UUID_INSECURE);
     }
 
-
     /**
-     * Starts the Bluetooth Connection
+     * starting chat service method
      */
-
     public void startBTConnection(BluetoothDevice device, UUID uuid){
         Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
 
-        mBluetoothConnectionService.startClient(device, uuid);
+        mBluetoothConnection.startClient(device,uuid);
     }
+
+
 
     public void enableDisableBT(){
         if(mBluetoothAdapter == null){
@@ -331,8 +380,8 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
         mBluetoothAdapter.cancelDiscovery();
 
         Log.d(TAG, "onItemClick: You Clicked on a device.");
-        String deviceName = mBTDevices.get(i).getName();
-        String deviceAddress = mBTDevices.get(i).getAddress();
+        String deviceName = mBTDiscoveredDevices.get(i).getName();
+        String deviceAddress = mBTDiscoveredDevices.get(i).getAddress();
 
         Log.d(TAG, "onItemClick: deviceName = " + deviceName);
         Log.d(TAG, "onItemClick: deviceAddress = " + deviceAddress);
@@ -341,10 +390,13 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity implement
         //NOTE: Requires API 17+? I think this is JellyBean
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
             Log.d(TAG, "Trying to pair with " + deviceName);
-            mBTDevices.get(i).createBond();
-            mRaspberryPi = mBTDevices.get(i);
-            mBluetoothConnectionService = new BluetoothConnectionService(BluetoothConnectionTestActivity.this);
+
+            mBTDiscoveredDevices.get(i).createBond();
+
+//            if(mBTDiscoveredDevices.get(i).createBond()){
+//                mBTDevice = mBTDiscoveredDevices.get(i);
+//                mBluetoothConnection = new BluetoothConnectionService(this);
+//            }
         }
     }
 }
-
