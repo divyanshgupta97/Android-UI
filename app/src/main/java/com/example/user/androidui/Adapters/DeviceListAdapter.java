@@ -1,4 +1,4 @@
-package com.example.user.androidui;
+package com.example.user.androidui.Adapters;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+
+import com.example.user.androidui.R;
 
 import java.util.ArrayList;
 

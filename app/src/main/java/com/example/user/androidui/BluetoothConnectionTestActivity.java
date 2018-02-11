@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -19,10 +18,11 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.user.androidui.Adapters.DeviceListAdapter;
+
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.UUID;
 
 
@@ -363,7 +363,6 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity {
         if(mBluetoothAdapter.isEnabled()){
             Log.d(TAG, "enableDisableBT: disabling BT.");
             mBluetoothAdapter.disable();
-
         }
 
     }
@@ -420,30 +419,31 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity {
 //            Log.d(TAG, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
 //        }
     }
-//
-//    @Override
-//    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-//        //first cancel discovery because its very memory intensive.
-//        mBluetoothAdapter.cancelDiscovery();
-//
-//        Log.d(TAG, "onItemClick: You Clicked on a device.");
-//        String deviceName = mBTDiscoveredDevices.get(i).getName();
-//        String deviceAddress = mBTDiscoveredDevices.get(i).getAddress();
-//
-//        Log.d(TAG, "onItemClick: deviceName = " + deviceName);
-//        Log.d(TAG, "onItemClick: deviceAddress = " + deviceAddress);
-//
-//        //create the bond.
-//        //NOTE: Requires API 17+? I think this is JellyBean
-//        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
-//            Log.d(TAG, "Trying to pair with " + deviceName);
-//
-//            mBTDiscoveredDevices.get(i).createBond();
-//
-////            if(mBTDiscoveredDevices.get(i).createBond()){
-////                mBTDevice = mBTDiscoveredDevices.get(i);
-////                mBluetoothConnection = new BluetoothConnectionService(this);
-////            }
-//        }
-//    }
+
+    public void sendForward(View view){
+        String instruction = "f";
+        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
+        mBluetoothConnection.write(bytes);
+    }
+
+    public void sendLeft(View view){
+        String instruction = "tl";
+        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
+        mBluetoothConnection.write(bytes);
+    }
+
+    public void sendRight(View view){
+        String instruction = "tr";
+        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
+        mBluetoothConnection.write(bytes);
+    }
+
+
+    public void sendReverse(View view){
+        String instruction = "r";
+        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
+        mBluetoothConnection.write(bytes);
+    }
+
+
 }

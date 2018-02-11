@@ -1,4 +1,4 @@
-package com.example.user.androidui;
+package com.example.user.androidui.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.user.androidui.R;
 
 /**
  * Created by user on 30/1/2018.

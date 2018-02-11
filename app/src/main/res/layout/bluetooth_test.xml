@@ -89,14 +89,53 @@
         android:id="@+id/btnSend"
         android:layout_toRightOf="@+id/editText"
         android:layout_below="@+id/ll_listView"/>
-    
+
     <TextView
         android:layout_marginTop="10dp"
         android:text="Incoming Message"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="100dp"
         android:layout_below="@+id/editText"
         android:layout_alignParentStart="true"
         android:id="@+id/incomingMessage"
         android:layout_alignParentEnd="true"/>
+
+    <Button
+        android:onClick="sendForward"
+        android:text="forward"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/incomingMessage"
+        android:id="@+id/forward"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:onClick="sendLeft"
+        android:text="left"
+        android:layout_toRightOf="@+id/forward"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/incomingMessage"
+        android:id="@+id/left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:onClick="sendRight"
+        android:text="right"
+        android:layout_toRightOf="@+id/left"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/incomingMessage"
+        android:id="@+id/right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:onClick="sendReverse"
+        android:text="Reverse"
+        android:layout_toRightOf="@+id/right"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/incomingMessage"
+        android:id="@+id/backward"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 </RelativeLayout>

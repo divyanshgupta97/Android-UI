@@ -25,9 +25,17 @@
         </activity>
         <activity
             android:name=".BluetoothConnectionTestActivity"
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".DeviceListActivity"
             android:screenOrientation="portrait"
-            android:parentActivityName=".BluetoothConnectionTestActivity">
-        </activity>
+            android:theme="@android:style/Theme.Holo.Dialog"
+            android:parentActivityName=".MainActivity"/>
+        <activity
+            android:name=".BluetoothChatService"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity"/>
     </application>
 
 </manifest>
