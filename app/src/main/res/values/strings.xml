@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Mars Rover</string>
 
-    <!--  BluetoothDevice -->
+    <!--  Bluetooth Pairing -->
     <string name="scanning">Scanning for devices...</string>
     <string name="select_device">Select a device to connect</string>
     <string name="none_paired">No devices have been paired</string>
@@ -10,10 +10,12 @@
     <string name="title_paired_devices">Paired Devices</string>
     <string name="title_other_devices">Other Available Devices</string>
     <string name="button_scan">Scan for devices</string>
+    <string name="button_unpair">Unpair paired devices</string>
 
     <!-- Options Menu -->
     <string name="action_connect">Connect</string>
     <string name="action_chat">Chat</string>
+    <string name="action_reconfigure">Reconfigure</string>
 
     <!--  BluetoothChat -->
     <string name="send">Send</string>
@@ -22,5 +24,11 @@
     <string name="title_connecting">connecting...</string>
     <string name="title_connected_to">connected to </string>
     <string name="title_not_connected">not connected</string>
+
+    <!-- String Preferences -->
+    <string name="string_f1_key">F1</string>
+    <string name="string_f2_key">F2</string>
+    <string name="defaultValue_f1">Greeting from Earth!!</string>
+    <string name="defaultValue_f2">Did you find life on Mars?!</string>
 
 </resources>

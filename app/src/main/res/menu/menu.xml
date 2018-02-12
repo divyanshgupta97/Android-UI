@@ -9,4 +9,8 @@
         android:id="@+id/action_bluetooth"
         android:title="@string/action_connect"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_reconfigure"
+        android:title="@string/action_reconfigure"
+        app:showAsAction="never"/>
 </menu>

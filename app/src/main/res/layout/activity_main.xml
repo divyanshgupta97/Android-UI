@@ -5,20 +5,32 @@
     android:layout_height="match_parent">
 
     <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="650dp"
         android:padding="5dp">
         <RelativeLayout
             android:layout_width="480dp"
             android:layout_height="match_parent">
+            <TextView
+                android:text="Connected Device"
+                android:id="@+id/connected_device"
+                android:textSize="15sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_marginBottom="10dp"
+                android:visibility="gone"/>
             <GridView
                 android:id="@+id/y-axis"
+                android:layout_below="@+id/connected_device"
                 android:layout_width="30dp"
                 android:layout_height="600dp"/>
             <GridView
                 android:id="@+id/maze"
                 android:layout_width="450dp"
                 android:layout_height="601dp"
+                android:layout_below="@id/connected_device"
                 android:layout_toRightOf="@id/y-axis">
             </GridView>
             <GridView
@@ -28,11 +40,88 @@
                 android:layout_width="450dp"
                 android:layout_height="30dp"/>
         </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+            <Button
+                android:id="@+id/f1"
+                android:text="F1"
+                android:onClick="sendF1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/f2"
+                android:text="F2"
+                android:onClick="sendF2"
+                android:layout_below="@+id/f1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
     </LinearLayout>
-    <Button
-        android:onClick="updateMap"
-        android:id="@+id/update_btn"
-        android:text="Update"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="176dp"
+        android:padding="5dp">
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/forward"
+                android:layout_marginLeft="42dp"
+                android:onClick="sendForward"
+                android:text="Forward"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/left"
+                android:layout_marginTop="40dp"
+                android:onClick="sendLeft"
+                android:text="Left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/right"
+                android:layout_toRightOf="@+id/left"
+                android:layout_marginTop="40dp"
+                android:onClick="sendRight"
+                android:text="Right"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/reverse"
+                android:layout_below="@+id/left"
+                android:onClick="sendReverse"
+                android:layout_marginLeft="42dp"
+                android:text="Reverse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/start_conn"
+                android:layout_marginTop="40dp"
+                android:layout_toRightOf="@id/right"
+                android:onClick="startConnection"
+                android:layout_marginLeft="20dp"
+                android:text="Start Connection"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/stop_conn"
+                android:layout_marginTop="40dp"
+                android:layout_toRightOf="@id/start_conn"
+                android:onClick="stopConnection"
+                android:layout_marginLeft="20dp"
+                android:text="Stop Connection"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/make_discoverable"
+                android:layout_below="@id/start_conn"
+                android:layout_toRightOf="@id/right"
+                android:onClick="makeDiscoverable"
+                android:layout_marginLeft="20dp"
+                android:text="Make Discoverable"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+    </LinearLayout>
 </LinearLayout>
