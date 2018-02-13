@@ -21,6 +21,7 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.user.androidui.Adapters.GridAxisAdapter;
 import com.example.user.androidui.Adapters.GridViewAdapter;
 
 
@@ -30,50 +31,35 @@ import java.util.UUID;
 
 
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
-    /**
-     * TAG for logging purposes.
-     */
+
     private static final String TAG = "MainActivity";
 
-    /**
-     * Declaring UI Elements.
-     */
     private GridView mGridView;
     private GridViewAdapter mGridViewAdapter;
-    private GridView xAxis;
-    private GridView yAxis;
-    private TextView connectedDeviceTextView;
-    private TextView robotStatus;
+
     private static final int NUM_ROWS = 20;
     private static final int NUM_COLS = 15;
 
-    /**
-     * String values to be sent to Bluetooth Device, when
-     * f1 and f2 are clicked.
-     */
+    private GridView xAxis;
+    private GridAxisAdapter xAxisAdapter;
+
+    private GridView yAxis;
+    private GridAxisAdapter yAxisAdapter;
+
+    private TextView connDeviceTV;
+    private TextView robotStatusTV;
+
     private String f1String;
     private String f2String;
 
-    /**
-     * Intent Request Codes.
-     */
     private static final int REQUEST_ENABLE_BT = 0;
     private static final int REQUEST_DEVICE_CONNECT_INSECURE = 1;
-    private static final int REQUEST_DEVICE_CONNECT_SECURE = 2;
-    private static final int REQUEST_DEVICE_CHAT = 3;
 
-    /**
-     * Bluetooth Essentials.
-     */
     private BluetoothAdapter mBTAdapter;
     private BluetoothDevice mBTDevice;
-    private BluetoothConnectionService mBluetoothConnection;
     private static final UUID MY_UUID_INSECURE =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
-    /**
-     * Map Descriptor String for
-     */
     private ArrayList<Character> mMapDescriptor;
 
     private static final String MAP_DESCRIPTOR_STRING = "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 " +
@@ -125,56 +111,42 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /**
-         * Setup F1 and F2 String Preferences.
-         */
-        setupSharedPreferences();
-
-        /**
-         * The the local Bluetooth Adapter
-         */
-        mBTAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        /**
-         * Initialize the BluetoothConnection Service Object.
-         */
-        mBluetoothConnection = new BluetoothConnectionService(this);
-
         mGridView = (GridView) findViewById(R.id.maze);
 //        xAxis = (GridView) findViewById(R.id.x_axis);
 //        yAxis = (GridView) findViewById(R.id.y_axis);
 
-        connectedDeviceTextView = (TextView) findViewById(R.id.connected_device);
-        robotStatus = (TextView) findViewById(R.id.robot_status);
-
-        mMapDescriptor = getMapDescriptor(MAP_DESCRIPTOR_STRING);
-        mGridViewAdapter = new GridViewAdapter(MainActivity.this, NUM_ROWS, NUM_COLS, mMapDescriptor);
-//        GridAxisAdapter xAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_COLS, false);
-//        GridAxisAdapter yAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_ROWS, true);
-//
         mGridView.setNumColumns(NUM_COLS);
 //        xAxis.setNumColumns(NUM_COLS);
 //        yAxis.setNumColumns(1);
-//
+
+        mMapDescriptor = MapDescriptor.getMapDescriptor(MAP_DESCRIPTOR_STRING);
+
+        mGridViewAdapter = new GridViewAdapter(MainActivity.this, NUM_ROWS, NUM_COLS, mMapDescriptor);
+//        xAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_COLS, false);
+//        yAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_ROWS, true);
+
         mGridView.setAdapter(mGridViewAdapter);
 //        xAxis.setAdapter(xAxisAdapter);
 //        yAxis.setAdapter(yAxisAdapter);
 
-        /**
-         * Register Broadcast Receiver to listen for strings Bluetooth Connected Thread's
-         * InputStream.
-         */
+        connDeviceTV = (TextView) findViewById(R.id.connected_device);
+        robotStatusTV = (TextView) findViewById(R.id.robot_status);
+
+        setupPreferenceStrings();
+
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(mIncomingMessageReceiver, new IntentFilter("incomingMessage"));
+
+        IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        this.registerReceiver(mBroadcastReceiver, intentFilter);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        /**
-         * If Bluetooth is not enabled, prompt user for enabling Bluetooth.
-         */
+        mBTAdapter = BluetoothAdapter.getDefaultAdapter();
+
         if(!mBTAdapter.isEnabled()){
             Intent enableBTIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBTIntent, REQUEST_ENABLE_BT);
@@ -184,32 +156,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        /**
-         * Unregister the Broadcast Receiver for incoming string messages.
-         */
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mIncomingMessageReceiver);
 
-        /**
-         * Unregister the preference change listener
-         */
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mIncomingMessageReceiver);
         PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
+        unregisterReceiver(mBroadcastReceiver);
+
         Log.d(TAG, "All receivers successfully unregistered");
     }
-
-    /**
-     * Broadcast Receiver to listen for strings from Bluetooth Connected Thread's
-     * InputStream.
-     */
-    private BroadcastReceiver mIncomingMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String incomingMessage = intent.getStringExtra("theMessage");
-            if(incomingMessage.contains("status"))
-                robotStatus.setText(incomingMessage);
-            Log.d(TAG, "Message from remote device: " + incomingMessage);
-        }
-    };
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -222,225 +175,97 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         int itemId = menuItem.getItemId();
 
         switch(itemId){
-            case R.id.action_bluetooth:
-                /**
-                 * Start the BluetoothPairingService for getting back a
-                 * paired Bluetooth Device.
-                 */
+            case R.id.action_bluetooth:{
                 Intent bluetoothConnectIntent = new Intent(this, BluetoothPairingService.class);
                 startActivityForResult(bluetoothConnectIntent, REQUEST_DEVICE_CONNECT_INSECURE);
                 return true;
+            }
 
-            case R.id.action_chat:
-                /**
-                 * If no paired Bluetooth Device found,
-                 * then we cannot connect and begin the chat.
-                 */
-                if(mBTDevice == null)
-                    Toast.makeText(this, "No Bluetooth Device connected", Toast.LENGTH_SHORT).show();
-                /**
-                 * We have a paired Bluetooth Device, so we can begin chat.
-                 */
-                else{
+            case R.id.action_chat:{
+                if(mBTDevice == null){
+                    Toast.makeText(this, "No Bluetooth device connected", Toast.LENGTH_SHORT).show();
+                } else {
                     Intent bluetoothChatIntent = new Intent(this, BluetoothChatService.class);
-                    bluetoothChatIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, mBTDevice);
-                    startActivityForResult(bluetoothChatIntent, REQUEST_DEVICE_CHAT);
+                    startActivity(bluetoothChatIntent);
                 }
                 return true;
+            }
 
-            case R.id.action_reconfigure:
-                /**
-                 * Prepare Intent for the PreferencesActivity.
-                 */
+            case R.id.action_reconfigure:{
                 Intent preferenceIntent = new Intent(this, PreferencesActivity.class);
                 startActivity(preferenceIntent);
                 return true;
+            }
 
-            default:
+            default:{
                 return super.onOptionsItemSelected(menuItem);
+            }
         }
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent receivedIntent) {
-        Log.d(TAG, "Inside onActivityResult");
         switch (requestCode){
-            case REQUEST_ENABLE_BT:
-                /**
-                 * Prompted user for enabling Bluetooth.
-                 */
-                if(resultCode != Activity.RESULT_OK)
-                    Toast.makeText(this, "Could not enable Bluetooth", Toast.LENGTH_SHORT).show();
-                else
+            case REQUEST_ENABLE_BT: {
+                if(resultCode != Activity.RESULT_OK){
+                    Toast.makeText(this, "Could not enable Bluetooth.", Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
                     Toast.makeText(this, "Bluetooth enabled.", Toast.LENGTH_SHORT).show();
-                break;
+                }
 
-            case REQUEST_DEVICE_CONNECT_INSECURE:
-                /**
-                 * BluetoothPairingService returns with a paired device.
-                 */
-                Log.d(TAG, "Inside REQUEST_DEVICE_CONNECT_INSECURE");
-                Log.d(TAG, "Before resultCode == Activity.RESULT_OK");
-                if(resultCode == Activity.RESULT_OK){
-                    Log.d(TAG, "Inside resultCode == Activity.RESULT_OK");
-                    initializeBluetoothDevice(receivedIntent);
-                }
-                else{
-                    Log.d(TAG, "inside else statement");
-                    mBTDevice = null;
-                }
-                Log.d(TAG, "after resultCode == Activity.RESULT_OK");
-                updateConnectedTextView();
                 break;
+            }
 
-            case REQUEST_DEVICE_CHAT:
-                /**
-                 * BluetoothChatService returns the Bluetooth Device we sent it.
-                 */
-                Log.d(TAG, "Inside onActivityResult: REQUEST_DEVICE_CHAT");
+            case REQUEST_DEVICE_CONNECT_INSECURE: {
                 if(resultCode == Activity.RESULT_OK){
-                    Log.d(TAG, "Inside onActivityResult: REQUEST_DEVICE_CHAT: resultCode == Activity.RESULT_OK");
-                    initializeBluetoothDevice(receivedIntent);
+                    initializeNewBTDevice(receivedIntent);
                 }
-                updateConnectedTextView();
                 break;
+            }
         }
     }
 
-    /**
-     * @param sharedPreferences
-     * @param key
-     * Preference Change Listener to listen for change in string preferences.
-     */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if(key.equals(getString(R.string.string_f1_key))){
             f1String = sharedPreferences.getString(getString(R.string.string_f1_key), getString(R.string.defaultValue_f1));
         }
-
         if(key.equals(getString(R.string.string_f2_key))){
             f2String = sharedPreferences.getString(getString(R.string.string_f2_key), getString(R.string.defaultValue_f2));
         }
     }
 
-    /**
-     * @param intent
-     * Initialize mBTDevice with the paired device received from BluetoothPairingService.
-     */
-    private void initializeBluetoothDevice(Intent intent) {
+    private void setupPreferenceStrings(){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        f1String = sharedPreferences.getString(getString(R.string.string_f1_key), getString(R.string.defaultValue_f1));
+        f2String = sharedPreferences.getString(getString(R.string.string_f2_key), getString(R.string.defaultValue_f2));
+
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    private void initializeNewBTDevice(Intent intent) {
         mBTDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+        updateConnTV();
     }
 
-    public void updateMap(View view){
-        ArrayList<Character> newMapDescriptor = getMapDescriptor(NEW_MAP_DESCRIPTOR_STRING);
-        mGridViewAdapter.refreshMap(newMapDescriptor);
-    }
-
-    /**
-     * @param mapDescriptorString
-     * @return
-     * Takes in a Map Descriptor String and returns an
-     * ArrayList of Characters.
-     */
-    private ArrayList<Character> getMapDescriptor(String mapDescriptorString){
-        ArrayList<Character> mapDescriptor = new ArrayList<Character>();
-
-        char[] mapDescriptorArray = mapDescriptorString.replace(" ", "").toCharArray();
-
-        for(char descriptor : mapDescriptorArray){
-            mapDescriptor.add(descriptor);
-        }
-
-        return mapDescriptor;
-    }
-
-    /**
-     * @param device
-     * @param uuid
-     * Given that we have a paired device, we start
-     * I/O with the remote Bluetooth Device.
-     */
-    private void startBTConnection(BluetoothDevice device, UUID uuid){
-        Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
-        mBluetoothConnection.startClient(device,uuid);
-    }
-
-    /**
-     * If we have received a paired Bluetooth Device,
-     * then set the TextView to show the name of the
-     * device. Else, we reset the TextView.
-     */
-    private void updateConnectedTextView(){
-        if(mBTDevice != null){
-            connectedDeviceTextView.setText(mBTDevice.getName().toString());
-            connectedDeviceTextView.setVisibility(View.VISIBLE);
-        }
-        else{
-            connectedDeviceTextView.setText("");
-            connectedDeviceTextView.setVisibility(View.INVISIBLE);
+    public void startBTConnection(View view){
+        if(mBTDevice == null){
+            Toast.makeText(this, "No paired device available.", Toast.LENGTH_SHORT).show();
+        } else{
+            Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
+            ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService
+                    .startClient(mBTDevice,MY_UUID_INSECURE, this);
         }
     }
 
-    /**
-     * @param view
-     * Send instruction to move robot forward.
-     */
-    public void sendForward(View view){
-        String instruction = "f";
-        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
-        mBluetoothConnection.write(bytes);
-    }
-
-    /**
-     * @param view
-     * Send instruction to make robot turn left.
-     */
-    public void sendLeft(View view){
-        String instruction = "tl";
-        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
-        mBluetoothConnection.write(bytes);
-    }
-
-    /**
-     * @param view
-     * Send instruction to make robot turn right.
-     */
-    public void sendRight(View view){
-        String instruction = "tr";
-        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
-        mBluetoothConnection.write(bytes);
-    }
-
-    /**
-     * @param view
-     * Send instruction to make the robot reverse.
-     */
-    public void sendReverse(View view){
-        String instruction = "r";
-        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
-        mBluetoothConnection.write(bytes);
-    }
-
-    /**
-     * @param view
-     * Start Bluetooth Connection after obtaining
-     * a paired device.
-     */
-    public void startConnection(View view){
-        if(mBTDevice == null)
-            Toast.makeText(this, "No Paired device available", Toast.LENGTH_SHORT).show();
-        else
-            startBTConnection(mBTDevice, MY_UUID_INSECURE);
-    }
-
-    /**
-     * @param view
-     * Stop ongoing Bluetooth connection, but keep
-     * listening for incoming Bluetooth Sockets.
-     */
-    public void stopConnection(View view){
-        mBluetoothConnection.stopThreadsButListen();
+    public void stopBTConnection(View view){
+        if(mBTDevice == null){
+            Toast.makeText(this, "No bluetooth device paired", Toast.LENGTH_SHORT);
+        } else {
+            ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.disconnectConn();
+        }
     }
 
     public void makeDiscoverable(View view){
@@ -449,38 +274,92 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         startActivity(discoverableIntent);
     }
 
-    /**
-     * @param view
-     * Send F1 String to the remote device.
-     */
+    private BroadcastReceiver mIncomingMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String incomingMessage = intent.getStringExtra("theMessage");
+            if(incomingMessage.contains("status")){
+                robotStatusTV.setText(incomingMessage);
+            }
+            Log.d(TAG, "Message from remote device: " + incomingMessage);
+        }
+    };
+
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)){
+                BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+                if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED){
+                    Log.d(TAG, "BroadcastReceiver: BOND_BONDED.");
+                    mBTDevice = bluetoothDevice;
+                    updateConnTV();
+                }
+
+                if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDING) {
+                    Log.d(TAG, "BroadcastReceiver: BOND_BONDING.");
+                }
+
+                if(bluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE){
+                    Log.d(TAG, "BroadcastReceiver: BOND_NONE.");
+                    if(bluetoothDevice.equals(mBTDevice)){
+                        mBTDevice = null;
+                        updateConnTV();
+                    }
+                }
+            }
+        }
+    };
+
+    public void sendForward(View view){
+        String instruction = "f";
+        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
+        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+    }
+
+    public void sendLeft(View view){
+        String instruction = "tl";
+        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
+        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+    }
+
+    public void sendRight(View view){
+        String instruction = "tr";
+        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
+        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+    }
+
+    public void sendReverse(View view){
+        String instruction = "r";
+        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
+        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+    }
+
     public void sendF1(View view){
         byte[] bytes = f1String.toString().getBytes(Charset.defaultCharset());
-        mBluetoothConnection.write(bytes);
+        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
     }
 
-    /**
-     * @param view
-     * Send F2 String to the remote device.
-     */
     public void sendF2(View view){
         byte[] bytes = f2String.toString().getBytes(Charset.defaultCharset());
-        mBluetoothConnection.write(bytes);
+        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
     }
 
-    /**
-     * Get F1 & F2 strings from SharedPreferences.
-     */
-    private void setupSharedPreferences(){
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        /**
-         * Get Preference Strings for f1 and f2.
-         */
-        f1String = sharedPreferences.getString(getString(R.string.string_f1_key), getString(R.string.defaultValue_f1));
-        f2String = sharedPreferences.getString(getString(R.string.string_f2_key), getString(R.string.defaultValue_f2));
+    private void updateConnTV(){
+        if(mBTDevice != null){
+            connDeviceTV.setText(mBTDevice.getName().toString());
+            connDeviceTV.setVisibility(View.VISIBLE);
+        }
+        else{
+            connDeviceTV.setText("");
+            connDeviceTV.setVisibility(View.INVISIBLE);
+        }
+    }
 
-        /**
-         * Register listener for changes in string prefereces.
-         */
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    public void updateMap(View view){
+        ArrayList<Character> newMapDescriptor = MapDescriptor.getMapDescriptor(NEW_MAP_DESCRIPTOR_STRING);
+        mGridViewAdapter.refreshMap(newMapDescriptor);
     }
 }

@@ -1,6 +1,5 @@
 package com.example.user.androidui;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,7 +8,6 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -35,7 +33,7 @@ public class BluetoothChatService extends AppCompatActivity {
     /**
      * Bluetooth Essentials.
      */
-    private BluetoothConnectionService mBluetoothConnection;
+//    private BluetoothConnectionService mBluetoothConnection;
     private BluetoothDevice mBTDevice;
 
     /**
@@ -55,6 +53,8 @@ public class BluetoothChatService extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bluetooth_chat);
 
+        mBTDevice = ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.getBTDevice();
+
         /**
          * Initialize UI Elements.
          */
@@ -73,16 +73,16 @@ public class BluetoothChatService extends AppCompatActivity {
          * to the Bluetooth Connected Thread for writing on output
          * stream.
          */
-        mSendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String writeMessage = mOutEditText.getText().toString();
-                byte[] bytes = writeMessage.getBytes(Charset.defaultCharset());
-                mBluetoothConnection.write(bytes);
-                mOutEditText.setText("");
-                mConversationArrayAdapter.add("Me:  " + writeMessage);
-            }
-        });
+//        mSendButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                String writeMessage = mOutEditText.getText().toString();
+//                byte[] bytes = writeMessage.getBytes(Charset.defaultCharset());
+//                mBluetoothConnection.write(bytes);
+//                mOutEditText.setText("");
+//                mConversationArrayAdapter.add("Me:  " + writeMessage);
+//            }
+//        });
 
         /**
          * Register Broadcast receiver to listen to incoming strings from the Bluetooth
@@ -93,19 +93,19 @@ public class BluetoothChatService extends AppCompatActivity {
         /**
          * Get the paired Bluetooth Device from the calling Intent.
          */
-        mBTDevice = getIntent().getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+//        mBTDevice = getIntent().getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
         /**
          * Initialize the BluetoothConnection Object to start listening for
          * incoming Bluetooth Sockets.
          */
-        mBluetoothConnection = new BluetoothConnectionService(this);
+//        mBluetoothConnection = new BluetoothConnectionService(this);
 
         /**
          * Start a Bluetooth connection from this device to the paired device,
          * via Bluetooth Connect Thread.
          */
-        mBluetoothConnection.startClient(mBTDevice,MY_UUID_INSECURE);
+//        mBluetoothConnection.startClient(mBTDevice,MY_UUID_INSECURE);
     }
 
     @Override
@@ -119,24 +119,24 @@ public class BluetoothChatService extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
-        if(menuItem.getItemId() == android.R.id.home){
-            Log.d(TAG, "Before stopping the fucking connection");
-            mBluetoothConnection.stopAllThreads();
-            Intent sendPairedDeviceIntent = new Intent();
-            sendPairedDeviceIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, mBTDevice);
-            setResult(Activity.RESULT_OK, sendPairedDeviceIntent);
-            finish();
-        }
+//        if(menuItem.getItemId() == android.R.id.home){
+//            Log.d(TAG, "Before stopping the fucking connection");
+//            mBluetoothConnection.stopAllThreads();
+//            Intent sendPairedDeviceIntent = new Intent();
+//            sendPairedDeviceIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, mBTDevice);
+//            setResult(Activity.RESULT_OK, sendPairedDeviceIntent);
+//            finish();
+//        }
             return super.onOptionsItemSelected(menuItem);
     }
 
     @Override
     public void onBackPressed() {
-        Log.d(TAG, "Before stopping the connection");
-        mBluetoothConnection.stopAllThreads();
-        Intent sendPairedDeviceIntent = new Intent();
-        sendPairedDeviceIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, mBTDevice);
-        setResult(Activity.RESULT_OK, sendPairedDeviceIntent);
+//        Log.d(TAG, "Before stopping the connection");
+//        mBluetoothConnection.stopAllThreads();
+//        Intent sendPairedDeviceIntent = new Intent();
+//        sendPairedDeviceIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, mBTDevice);
+//        setResult(Activity.RESULT_OK, sendPairedDeviceIntent);
         finish();
     }
 
@@ -151,4 +151,12 @@ public class BluetoothChatService extends AppCompatActivity {
             mConversationArrayAdapter.add(mBTDevice.getName() + ": " + readMessage);
         }
     };
+
+    public void sendMessage(View view){
+        String writeMessage = mOutEditText.getText().toString();
+        byte[] bytes = writeMessage.getBytes(Charset.defaultCharset());
+        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+        mOutEditText.setText("");
+        mConversationArrayAdapter.add("Me:  " + writeMessage);
+    }
 }

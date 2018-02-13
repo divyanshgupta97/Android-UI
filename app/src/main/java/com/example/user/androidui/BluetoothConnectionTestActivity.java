@@ -345,7 +345,7 @@ public class BluetoothConnectionTestActivity extends AppCompatActivity {
     public void startBTConnection(BluetoothDevice device, UUID uuid){
         Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
 
-        mBluetoothConnection.startClient(device,uuid);
+        mBluetoothConnection.startClient(device,uuid, this);
     }
 
 
