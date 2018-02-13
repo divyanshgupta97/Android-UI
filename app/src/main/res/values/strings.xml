@@ -27,7 +27,7 @@
 
     <!-- String Preferences -->
     <string name="string_f1_key">F1</string>
-    <string name="string_f2_key">F2</string>
+    <string name="string_f2_key ">F2</string>
     <string name="defaultValue_f1">Greeting from Earth!!</string>
     <string name="defaultValue_f2">Did you find life on Mars?!</string>
 

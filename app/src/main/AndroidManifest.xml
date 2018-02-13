@@ -39,11 +39,12 @@
             android:parentActivityName=".MainActivity"/>
         <activity
             android:name=".PreferencesActivity"
+            android:label="@string/action_reconfigure"
             android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".PreferencesActivity"/>
+                android:value=".MainActivity"/>
         </activity>
 
     </application>

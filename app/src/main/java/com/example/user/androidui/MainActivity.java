@@ -261,6 +261,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                  */
                 Intent preferenceIntent = new Intent(this, PreferencesActivity.class);
                 startActivity(preferenceIntent);
+                return true;
 
             default:
                 return super.onOptionsItemSelected(menuItem);
