@@ -9,9 +9,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -23,7 +23,6 @@ import android.widget.Toast;
 
 import com.example.user.androidui.Adapters.GridViewAdapter;
 
-import org.w3c.dom.Text;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -44,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private GridView xAxis;
     private GridView yAxis;
     private TextView connectedDeviceTextView;
+    private TextView robotStatus;
     private static final int NUM_ROWS = 20;
     private static final int NUM_COLS = 15;
 
@@ -126,15 +126,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         setContentView(R.layout.activity_main);
 
         /**
-         * Get the SharedPreferences
+         * Setup F1 and F2 String Preferences.
          */
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        /**
-         * Get Preference Strings for f1 and f2.
-         */
-        f1String = sharedPreferences.getString(getString(R.string.string_f1_key), getString(R.string.defaultValue_f1));
-        f2String = sharedPreferences.getString(getString(R.string.string_f2_key), getString(R.string.defaultValue_f2));
+        setupSharedPreferences();
 
         /**
          * The the local Bluetooth Adapter
@@ -151,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 //        yAxis = (GridView) findViewById(R.id.y_axis);
 
         connectedDeviceTextView = (TextView) findViewById(R.id.connected_device);
+        robotStatus = (TextView) findViewById(R.id.robot_status);
 
         mMapDescriptor = getMapDescriptor(MAP_DESCRIPTOR_STRING);
         mGridViewAdapter = new GridViewAdapter(MainActivity.this, NUM_ROWS, NUM_COLS, mMapDescriptor);
@@ -171,11 +166,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
          */
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(mIncomingMessageReceiver, new IntentFilter("incomingMessage"));
-
-        /**
-         * Register listener for changes in string prefereces.
-         */
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -198,6 +188,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
          * Unregister the Broadcast Receiver for incoming string messages.
          */
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mIncomingMessageReceiver);
+
         /**
          * Unregister the preference change listener
          */
@@ -212,8 +203,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private BroadcastReceiver mIncomingMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String text = intent.getStringExtra("theMessage");
-            Log.d(TAG, "Message from remote device: " + text);
+            String incomingMessage = intent.getStringExtra("theMessage");
+            if(incomingMessage.contains("status"))
+                robotStatus.setText(incomingMessage);
+            Log.d(TAG, "Message from remote device: " + incomingMessage);
         }
     };
 
@@ -472,5 +465,22 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     public void sendF2(View view){
         byte[] bytes = f2String.toString().getBytes(Charset.defaultCharset());
         mBluetoothConnection.write(bytes);
+    }
+
+    /**
+     * Get F1 & F2 strings from SharedPreferences.
+     */
+    private void setupSharedPreferences(){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        /**
+         * Get Preference Strings for f1 and f2.
+         */
+        f1String = sharedPreferences.getString(getString(R.string.string_f1_key), getString(R.string.defaultValue_f1));
+        f2String = sharedPreferences.getString(getString(R.string.string_f2_key), getString(R.string.defaultValue_f2));
+
+        /**
+         * Register listener for changes in string prefereces.
+         */
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 }
