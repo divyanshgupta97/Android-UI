@@ -19,16 +19,12 @@ public class GridAxisAdapter extends BaseAdapter {
     private Context mContext;
     private int[] mItems;
 
-    public GridAxisAdapter(Context context, int numCoordinates, boolean reverse){
+    public GridAxisAdapter(Context context, int numCoordinates){
         mContext = context;
         mItems = new int[numCoordinates];
 
-        if(reverse)
-            for(int i=0; i < numCoordinates; ++i)
-                mItems[i] = (numCoordinates - 1) - i;
-        else
-            for(int i=0; i < numCoordinates; ++i)
-                mItems[i] = i;
+        for(int i=0; i < numCoordinates; ++i)
+            mItems[i] = i;
     }
 
     @Override
@@ -53,7 +49,7 @@ public class GridAxisAdapter extends BaseAdapter {
         }
         TextView numTextView = (TextView) view.findViewById(R.id.tv_cell);
         numTextView.setText(Integer.toString(mItems[index]));
-//        view.setBackgroundResource(R.drawable.cell_item_border);
+        view.setBackgroundResource(R.drawable.cell_item_axis);
         return view;
 
     }

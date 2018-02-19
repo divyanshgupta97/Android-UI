@@ -25,6 +25,8 @@ import com.example.user.androidui.Adapters.GridAxisAdapter;
 import com.example.user.androidui.Adapters.GridViewAdapter;
 
 
+import org.json.JSONObject;
+
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -62,49 +64,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private ArrayList<Character> mMapDescriptor;
 
-    private static final String MAP_DESCRIPTOR_STRING = "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 " +
-                                                        "1 1 1 2 2 2 1 1 1 2 2 2 2 2 1 " +
-                                                        "0 0 0 0 0 0 2 2 2 2 1 1 1 1 2 " +
-                                                        "1 1 1 1 1 1 2 2 2 2 1 1 1 1 2 " +
-                                                        "1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 " +
-                                                        "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 " +
-                                                        "1 1 1 2 2 2 1 1 1 2 2 2 2 2 1 " +
-                                                        "0 0 0 0 0 0 2 2 2 2 1 1 1 1 2 " +
-                                                        "1 1 1 1 1 1 2 2 2 2 1 1 1 1 2 " +
-                                                        "1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 " +
-                                                        "1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 " +
-                                                        "1 1 1 1 1 1 2 2 2 2 1 1 1 1 2 " +
-                                                        "4 4 4 1 1 1 1 2 2 2 2 1 1 1 1 " +
-                                                        "4 4 3 1 1 1 1 1 1 2 2 2 2 2 2 " +
-                                                        "4 4 4 1 1 1 1 1 2 2 2 2 0 0 0 " +
-                                                        "0 0 0 0 0 0 2 2 2 2 1 1 1 1 2 " +
-                                                        "1 1 1 1 1 1 2 2 2 2 1 1 1 1 2 " +
-                                                        "1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 " +
-                                                        "1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 " +
-                                                        "1 1 1 1 1 1 2 2 2 2 1 1 1 1 2";
-
-
-    private static final String NEW_MAP_DESCRIPTOR_STRING = "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 " +
-                                                            "1 1 1 2 2 2 1 1 1 2 2 2 2 2 1 " +
-                                                            "0 0 0 0 0 0 2 2 2 2 1 1 1 1 2 " +
-                                                            "1 1 1 1 1 1 2 2 2 2 1 1 1 1 2 " +
-                                                            "1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 " +
-                                                            "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 " +
-                                                            "1 1 1 2 2 2 1 1 1 2 2 2 2 2 1 " +
-                                                            "0 0 0 0 0 0 2 2 2 2 1 1 1 1 2 " +
-                                                            "1 1 1 1 1 1 2 2 2 2 1 1 1 1 2 " +
-                                                            "1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 " +
-                                                            "1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 " +
-                                                            "1 1 1 1 1 1 2 2 2 2 1 1 1 1 2 " +
-                                                            "0 0 0 1 1 1 1 2 2 2 2 1 1 1 1 " +
-                                                            "0 0 0 1 1 1 1 1 1 2 2 2 2 2 2 " +
-                                                            "0 0 0 1 1 1 1 1 2 2 2 2 0 0 0 " +
-                                                            "0 0 0 0 0 0 2 2 2 2 1 1 1 1 2 " +
-                                                            "1 1 1 1 1 1 2 2 2 2 1 1 1 1 2 " +
-                                                            "1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 " +
-                                                            "1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 " +
-                                                            "1 1 1 1 1 1 2 2 2 2 1 1 1 1 2";
-
+    private static final String MAP_DESCRIPTOR_STRING = "000000000000000000000000000000000000000000000000000000000000000000000000000";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,22 +72,22 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         setContentView(R.layout.activity_main);
 
         mGridView = (GridView) findViewById(R.id.maze);
-//        xAxis = (GridView) findViewById(R.id.x_axis);
-//        yAxis = (GridView) findViewById(R.id.y_axis);
+        xAxis = (GridView) findViewById(R.id.x_axis);
+        yAxis = (GridView) findViewById(R.id.y_axis);
 
         mGridView.setNumColumns(NUM_COLS);
-//        xAxis.setNumColumns(NUM_COLS);
-//        yAxis.setNumColumns(1);
+        xAxis.setNumColumns(NUM_COLS);
+        yAxis.setNumColumns(1);
 
-        mMapDescriptor = MapDescriptor.getMapDescriptor(MAP_DESCRIPTOR_STRING);
+        mMapDescriptor = Utils.getMapDescriptor(MAP_DESCRIPTOR_STRING);
 
         mGridViewAdapter = new GridViewAdapter(MainActivity.this, NUM_ROWS, NUM_COLS, mMapDescriptor);
-//        xAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_COLS, false);
-//        yAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_ROWS, true);
+        xAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_COLS);
+        yAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_ROWS);
 
         mGridView.setAdapter(mGridViewAdapter);
-//        xAxis.setAdapter(xAxisAdapter);
-//        yAxis.setAdapter(yAxisAdapter);
+        xAxis.setAdapter(xAxisAdapter);
+        yAxis.setAdapter(yAxisAdapter);
 
         connDeviceTV = (TextView) findViewById(R.id.connected_device);
         robotStatusTV = (TextView) findViewById(R.id.robot_status);
@@ -281,6 +241,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             if(incomingMessage.contains("status")){
                 robotStatusTV.setText(incomingMessage);
             }
+            if(incomingMessage.contains("grid")){
+                JSONObject gridJSON = Utils.getJSONObject(incomingMessage);
+                String gridString = Utils.getJSONString(gridJSON, "grid");
+                mMapDescriptor = Utils.getMapDescriptor(gridString);
+                mGridViewAdapter.refreshMap(mMapDescriptor);
+            }
+            if(incomingMessage.contains("robotPosition")){
+                JSONObject robotJSON = Utils.getJSONObject(incomingMessage);
+                int[] robotPosition = Utils.getJSONArray(robotJSON, "robotPosition");
+                Log.d(TAG, "robotPosition: " + robotPosition[0] + ", " + robotPosition[1] + ", " + robotPosition[2]);
+                mMapDescriptor = Utils.robotPositionChanged(mMapDescriptor, robotPosition, NUM_COLS);
+                mGridViewAdapter.refreshMap(mMapDescriptor);
+            }
             Log.d(TAG, "Message from remote device: " + incomingMessage);
         }
     };
@@ -347,6 +320,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
     }
 
+    public void askForGrid(View view){
+        String instruction = "sendArena";
+        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
+        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+    }
+
     private void updateConnTV(){
         if(mBTDevice != null){
             connDeviceTV.setText(mBTDevice.getName().toString());
@@ -356,10 +335,5 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             connDeviceTV.setText("");
             connDeviceTV.setVisibility(View.INVISIBLE);
         }
-    }
-
-    public void updateMap(View view){
-        ArrayList<Character> newMapDescriptor = MapDescriptor.getMapDescriptor(NEW_MAP_DESCRIPTOR_STRING);
-        mGridViewAdapter.refreshMap(newMapDescriptor);
     }
 }

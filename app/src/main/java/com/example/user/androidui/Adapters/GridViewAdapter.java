@@ -2,6 +2,7 @@ package com.example.user.androidui.Adapters;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,19 +18,18 @@ import java.util.List;
 
 public class GridViewAdapter extends BaseAdapter {
 
-    // Member variables
     private Toast mToast;
     private Context mContext;
     private int mNumRows;
     private int mNumCols;
     private ArrayList<Character> mMapDescriptor;
 
-    // Map constants
-    private static final char UNDISCOVERED = '0';
-    private static final char DISCOVERED  ='1';
-    private static final char OBSTACLE = '2';
-    private static final char ROBOT_HEAD = '3';
-    private static final char ROBOT_BODY = '4';
+    public static final char FREE = '0';
+    public static final char OBSTACLE  ='1';
+//    public static final char FREE = '2';
+//    private static final char OBSTACLE = '3';
+    public static final char ROBOT_HEAD = '2';
+    public static final char ROBOT_BODY = '3';
 
     public GridViewAdapter(Context context, int numRows, int numCols, ArrayList<Character> mapDescriptor){
         mContext = context;
@@ -69,12 +69,12 @@ public class GridViewAdapter extends BaseAdapter {
     private void setColor(View view, char cellStatus){
 
         switch(cellStatus){
-            case DISCOVERED:
+            case FREE:
                 view.setBackgroundResource(R.drawable.cell_item_1);
                 break;
-            case OBSTACLE:
-                view.setBackgroundResource(R.drawable.cell_item_2);
-                break;
+//            case OBSTACLE:
+//                view.setBackgroundResource(R.drawable.cell_item_2);
+//                break;
             case ROBOT_HEAD:
                 view.setBackgroundResource(R.drawable.cell_item_3);
                 break;
@@ -89,6 +89,8 @@ public class GridViewAdapter extends BaseAdapter {
     public void refreshMap(ArrayList<Character> mapDescriptor){
         mMapDescriptor.clear();
         mMapDescriptor.addAll(mapDescriptor);
+        Log.d("GridViewAdapter", "Map Descriptor Size: " + mapDescriptor.size());
         notifyDataSetChanged();
     }
+
 }
