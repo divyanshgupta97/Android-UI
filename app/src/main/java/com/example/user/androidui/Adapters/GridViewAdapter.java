@@ -1,6 +1,8 @@
 package com.example.user.androidui.Adapters;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,6 +13,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.user.androidui.CoordinatesSelectionService;
+import com.example.user.androidui.MainActivity;
 import com.example.user.androidui.R;
 
 import java.util.ArrayList;
@@ -54,7 +58,7 @@ public class GridViewAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int index, View currentView, ViewGroup parentViewGroup) {
+    public View getView(final int index, View currentView, ViewGroup parentViewGroup) {
 
         if(currentView == null){
             currentView = LayoutInflater.from(mContext).inflate(R.layout.cell_layout,parentViewGroup, false);
@@ -62,6 +66,19 @@ public class GridViewAdapter extends BaseAdapter {
 
         char cellStatus = (char) getItem(index);
         setColor(currentView, cellStatus);
+
+        currentView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int xCoord = index % mNumCols;
+                int yCoord = index / mNumCols;
+
+                Intent messageIntent = new Intent(mContext, CoordinatesSelectionService.class);
+                messageIntent.putExtra("X", xCoord);
+                messageIntent.putExtra("Y", yCoord);
+                ((Activity)mContext).startActivityForResult(messageIntent, MainActivity.REQUEST_COORDINATES);
+            }
+        });
 
         return currentView;
     }

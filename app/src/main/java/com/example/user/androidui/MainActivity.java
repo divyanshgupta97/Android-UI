@@ -9,6 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
@@ -32,9 +36,13 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 
-public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, SensorEventListener{
 
     private static final String TAG = "MainActivity";
+
+//    private Handler mHandler;
+
+    private Toast mToast;
 
     private GridView mGridView;
     private GridViewAdapter mGridViewAdapter;
@@ -56,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private static final int REQUEST_ENABLE_BT = 0;
     private static final int REQUEST_DEVICE_CONNECT_INSECURE = 1;
+    public  static final int REQUEST_COORDINATES = 2;
 
     private BluetoothAdapter mBTAdapter;
     private BluetoothDevice mBTDevice;
@@ -65,6 +74,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private ArrayList<Character> mMapDescriptor;
 
     private static final String MAP_DESCRIPTOR_STRING = "000000000000000000000000000000000000000000000000000000000000000000000000000";
+
+    private SensorManager sensorManager;
+    private Sensor sensor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +111,83 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
         this.registerReceiver(mBroadcastReceiver, intentFilter);
+
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+//        mHandler = new Handler();
+
+        float x = sensorEvent.values[0];
+        float y = sensorEvent.values[1];
+
+//        Log.d(TAG, "onSensorChanged: X: " + x + ", onSensorChanged: Y: " + y);
+
+//        if(mToast != null)
+//            mToast.cancel();
+
+        if (Math.abs(x) > Math.abs(y)) {
+            if (x < -4) {
+//                mToast = Toast.makeText(this, "Right", Toast.LENGTH_SHORT);
+//                mToast.show();
+//                Log.d(TAG, "Right");
+//                writeRight();
+//                mHandler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        writeRight();
+//                    }
+//                }, 5000);
+            }
+            if (x > 4) {
+//                mToast = Toast.makeText(this, "Left", Toast.LENGTH_SHORT);
+//                mToast.show();
+//                Log.d(TAG, "Left");
+//                writeLeft();
+//                mHandler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        writeLeft();
+//                    }
+//                }, 5000);
+            }
+        } else {
+            if (y < -2) {
+//                mToast = Toast.makeText(this, "Forward", Toast.LENGTH_SHORT);
+//                mToast.show();
+//                Log.d(TAG, "Forward");
+//                writeForward();
+//                mHandler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        writeForward();
+//                    }
+//                }, 5000);
+            }
+            if (y > 4) {
+//                mToast = Toast.makeText(this, "Reverse", Toast.LENGTH_SHORT);
+//                mToast.show();
+//                Log.d(TAG, "Reverse");
+//                writeReverse();
+//                mHandler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        writeReverse();
+//                    }
+//                }, 5000);
+            }
+        }
+        if (x > (-4) && x < (4) && y > (-2) && y < (4)) {
+//            mToast = Toast.makeText(this, "Stable", Toast.LENGTH_SHORT);
+//            mToast.show();
+//            Log.d(TAG, "Stable");
+            }
     }
 
     @Override
@@ -111,6 +200,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             Intent enableBTIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBTIntent, REQUEST_ENABLE_BT);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sensorManager.registerListener(this, sensor, 1000000);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //unregister Sensor listener
+        sensorManager.unregisterListener(this);
     }
 
     @Override
@@ -182,6 +284,16 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     initializeNewBTDevice(receivedIntent);
                 }
                 break;
+            }
+
+            case REQUEST_COORDINATES: {
+                if(resultCode == Activity.RESULT_OK){
+                    int xCoord = receivedIntent.getIntExtra("X", 0);
+                    int yCoord = receivedIntent.getIntExtra("Y", 0);
+                    String type = receivedIntent.getStringExtra("TYPE");
+
+                    Log.d(TAG, "X: " + xCoord + ", Y: " + yCoord + ", Type: " + type);
+                }
             }
         }
     }
@@ -286,28 +398,44 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     };
 
-    public void sendForward(View view){
+    public void writeForward(){
         String instruction = "f";
         byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
         ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
     }
 
-    public void sendLeft(View view){
+    public void writeLeft(){
         String instruction = "tl";
         byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
         ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
     }
 
-    public void sendRight(View view){
+    public void writeRight(){
         String instruction = "tr";
         byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
         ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
     }
 
-    public void sendReverse(View view){
+    public void writeReverse(){
         String instruction = "r";
         byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
         ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+    }
+
+    public void sendForward(View view){
+        writeForward();
+    }
+
+    public void sendLeft(View view){
+        writeLeft();
+    }
+
+    public void sendRight(View view){
+        writeRight();
+    }
+
+    public void sendReverse(View view){
+        writeReverse();
     }
 
     public void sendF1(View view){
@@ -328,7 +456,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private void updateConnTV(){
         if(mBTDevice != null){
-            connDeviceTV.setText(mBTDevice.getName().toString());
+            connDeviceTV.setText("Connected Device: " + mBTDevice.getName().toString());
             connDeviceTV.setVisibility(View.VISIBLE);
         }
         else{

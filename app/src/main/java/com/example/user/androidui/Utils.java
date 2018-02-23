@@ -61,7 +61,6 @@ public class Utils {
         for(int i = 0; i < binString.length(); ++i)
             mapDescriptor.add(binString.charAt(i));
 
-
         return mapDescriptor;
     }
 
