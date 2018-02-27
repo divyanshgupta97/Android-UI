@@ -13,6 +13,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
@@ -40,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private static final String TAG = "MainActivity";
 
-//    private Handler mHandler;
+    private Handler mHandler;
 
     private Toast mToast;
 
@@ -58,9 +59,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private TextView connDeviceTV;
     private TextView robotStatusTV;
+    private TextView wayPointXCoordTV;
+    private TextView wayPointYCoordTV;
+    private TextView startCoordinateXCoordTV;
+    private TextView startCoordinateYCoordTV;
 
     private String f1String;
     private String f2String;
+    private String wayPointXCoord;
+    private String wayPointYCoord;
+    private String startCoordinateXCoord;
+    private String startCoordinateYCoord;
 
     private static final int REQUEST_ENABLE_BT = 0;
     private static final int REQUEST_DEVICE_CONNECT_INSECURE = 1;
@@ -103,6 +112,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         connDeviceTV = (TextView) findViewById(R.id.connected_device);
         robotStatusTV = (TextView) findViewById(R.id.robot_status);
+        wayPointXCoordTV = (TextView) findViewById(R.id.waypoint_x);
+        wayPointYCoordTV = (TextView) findViewById(R.id.waypoint_y);
+        startCoordinateXCoordTV = (TextView) findViewById(R.id.start_coordinate_x);
+        startCoordinateYCoordTV = (TextView) findViewById(R.id.start_coordinate_y);
 
         setupPreferenceStrings();
 
@@ -111,9 +124,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
         this.registerReceiver(mBroadcastReceiver, intentFilter);
-
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+//
+//        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+//        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
     }
 
     @Override
@@ -122,12 +135,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-//        mHandler = new Handler();
+        mHandler = new Handler();
 
         float x = sensorEvent.values[0];
         float y = sensorEvent.values[1];
 
-//        Log.d(TAG, "onSensorChanged: X: " + x + ", onSensorChanged: Y: " + y);
+        Log.d(TAG, "onSensorChanged: X: " + x + ", onSensorChanged: Y: " + y);
 
 //        if(mToast != null)
 //            mToast.cancel();
@@ -136,57 +149,57 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             if (x < -4) {
 //                mToast = Toast.makeText(this, "Right", Toast.LENGTH_SHORT);
 //                mToast.show();
-//                Log.d(TAG, "Right");
+                Log.d(TAG, "Right");
 //                writeRight();
-//                mHandler.postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        writeRight();
-//                    }
-//                }, 5000);
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        writeRight();
+                    }
+                }, 5000);
             }
             if (x > 4) {
 //                mToast = Toast.makeText(this, "Left", Toast.LENGTH_SHORT);
 //                mToast.show();
-//                Log.d(TAG, "Left");
+                Log.d(TAG, "Left");
 //                writeLeft();
-//                mHandler.postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        writeLeft();
-//                    }
-//                }, 5000);
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        writeLeft();
+                    }
+                }, 5000);
             }
         } else {
             if (y < -2) {
 //                mToast = Toast.makeText(this, "Forward", Toast.LENGTH_SHORT);
 //                mToast.show();
-//                Log.d(TAG, "Forward");
+                Log.d(TAG, "Forward");
 //                writeForward();
-//                mHandler.postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        writeForward();
-//                    }
-//                }, 5000);
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        writeForward();
+                    }
+                }, 5000);
             }
             if (y > 4) {
 //                mToast = Toast.makeText(this, "Reverse", Toast.LENGTH_SHORT);
 //                mToast.show();
-//                Log.d(TAG, "Reverse");
+                Log.d(TAG, "Reverse");
 //                writeReverse();
-//                mHandler.postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        writeReverse();
-//                    }
-//                }, 5000);
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        writeReverse();
+                    }
+                }, 5000);
             }
         }
         if (x > (-4) && x < (4) && y > (-2) && y < (4)) {
 //            mToast = Toast.makeText(this, "Stable", Toast.LENGTH_SHORT);
 //            mToast.show();
-//            Log.d(TAG, "Stable");
+            Log.d(TAG, "Stable");
             }
     }
 
@@ -205,14 +218,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     protected void onResume() {
         super.onResume();
-        sensorManager.registerListener(this, sensor, 1000000);
+//        sensorManager.registerListener(this, sensor, 1000000);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         //unregister Sensor listener
-        sensorManager.unregisterListener(this);
+//        sensorManager.unregisterListener(this);
     }
 
     @Override
@@ -293,6 +306,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     String type = receivedIntent.getStringExtra("TYPE");
 
                     Log.d(TAG, "X: " + xCoord + ", Y: " + yCoord + ", Type: " + type);
+
+                    if(type.equals("wayPoint")){
+                        wayPointXCoord = Integer.toString(xCoord);
+                        wayPointYCoord = Integer.toString(yCoord);;
+//                        sendWayPoint(xCoord, yCoord);
+                        updateWayPointTV();
+                    }
+                    else{
+                        startCoordinateXCoord = Integer.toString(xCoord);
+                        startCoordinateYCoord = Integer.toString(yCoord);
+//                        sendStartCoordinates(xCoord, yCoord);
+                        updateStartCoordinatesTV();
+                    }
                 }
             }
         }
@@ -398,28 +424,25 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     };
 
-    public void writeForward(){
-        String instruction = "f";
-        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
+    private void writeOnOutputStream(String message){
+        byte[] bytes = message.toString().getBytes(Charset.defaultCharset());
         ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
     }
 
-    public void writeLeft(){
-        String instruction = "tl";
-        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
-        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+    private void writeForward(){
+        writeOnOutputStream("f");
+    }
+
+    private void writeLeft(){
+        writeOnOutputStream("tl");
     }
 
     public void writeRight(){
-        String instruction = "tr";
-        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
-        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+        writeOnOutputStream("tr");
     }
 
     public void writeReverse(){
-        String instruction = "r";
-        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
-        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+        writeOnOutputStream("r");
     }
 
     public void sendForward(View view){
@@ -439,19 +462,31 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     public void sendF1(View view){
-        byte[] bytes = f1String.toString().getBytes(Charset.defaultCharset());
-        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+        writeOnOutputStream(f1String);
     }
 
     public void sendF2(View view){
-        byte[] bytes = f2String.toString().getBytes(Charset.defaultCharset());
-        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+        writeOnOutputStream(f2String);
+    }
+
+    public void startExploration(View view){
+        writeOnOutputStream("startExploration");
+    }
+
+    public void startShortestPath(View view){
+        writeOnOutputStream("startShortestPath");
+    }
+
+    private void sendStartCoordinates(int x, int y){
+        writeOnOutputStream("startCoordinates(" + Integer.toString(x) + ", " + Integer.toString(y) + ")");
+    }
+
+    private void sendWayPoint(int x, int y){
+        writeOnOutputStream("wayPoint(" + Integer.toString(x) + ", " + Integer.toString(y) + ")");
     }
 
     public void askForGrid(View view){
-        String instruction = "sendArena";
-        byte[] bytes = instruction.toString().getBytes(Charset.defaultCharset());
-        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+        writeOnOutputStream("sendArena");
     }
 
     private void updateConnTV(){
@@ -464,4 +499,15 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             connDeviceTV.setVisibility(View.INVISIBLE);
         }
     }
+
+    private void updateWayPointTV(){
+        wayPointXCoordTV.setText(wayPointXCoord);
+        wayPointYCoordTV.setText(wayPointYCoord);
+    }
+
+    private void updateStartCoordinatesTV(){
+        startCoordinateXCoordTV.setText(startCoordinateXCoord);
+        startCoordinateYCoordTV.setText(startCoordinateYCoord);
+    }
+
 }

@@ -47,7 +47,7 @@ public class CoordinatesSelectionService extends Activity {
                 Intent messageIntent = new Intent(CoordinatesSelectionService.this, MainActivity.class);
                 messageIntent.putExtra("X", xCoord);
                 messageIntent.putExtra("Y", yCoord);
-                messageIntent.putExtra("TYPE", "WAYPOINT");
+                messageIntent.putExtra("TYPE", "wayPoint");
                 setResult(RESULT_OK, messageIntent);
                 finish();
             }
@@ -59,7 +59,7 @@ public class CoordinatesSelectionService extends Activity {
                 Intent messageIntent = new Intent(CoordinatesSelectionService.this, MainActivity.class);
                 messageIntent.putExtra("X", xCoord);
                 messageIntent.putExtra("Y", yCoord);
-                messageIntent.putExtra("TYPE", "START-COORDINATES");
+                messageIntent.putExtra("TYPE", "startCoordinates");
                 setResult(RESULT_OK, messageIntent);
                 finish();
             }

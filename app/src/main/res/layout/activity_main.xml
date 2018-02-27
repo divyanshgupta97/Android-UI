@@ -53,6 +53,52 @@
                 android:text="update"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/start_exploration_btn"
+                android:text="Explore"
+                android:onClick="startExploration"
+                android:layout_below="@id/maze_update"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/start_shortest_path_btn"
+                android:text="Shortest"
+                android:onClick="startShortestPath"
+                android:layout_below="@id/start_exploration_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/waypoint_TV"
+                android:layout_below="@id/start_shortest_path_btn"
+                android:text="WayPoint:"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/waypoint_x"
+                android:layout_below="@id/waypoint_TV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/waypoint_y"
+                android:layout_below="@id/waypoint_x"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/start_coordinate_TV"
+                android:layout_below="@id/waypoint_y"
+                android:text="Start Coordinates:"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/start_coordinate_x"
+                android:layout_below="@id/start_coordinate_TV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/start_coordinate_y"
+                android:layout_below="@id/start_coordinate_x"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         </RelativeLayout>
     </LinearLayout>
     <LinearLayout
