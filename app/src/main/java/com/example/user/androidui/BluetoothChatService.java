@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -16,7 +15,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import java.nio.charset.Charset;
-import java.util.UUID;
 
 public class BluetoothChatService extends AppCompatActivity {
     private static final String TAG = "BluetoothChatService";
@@ -43,20 +41,20 @@ public class BluetoothChatService extends AppCompatActivity {
         mConversationArrayAdapter = new ArrayAdapter<String>(this, R.layout.message);
         mConversationView.setAdapter(mConversationArrayAdapter);
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("incomingMessage"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mIncomingMessageReceiver, new IntentFilter("incomingMessage"));
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mIncomingMessageReceiver);
     }
 
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver mIncomingMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String readMessage = intent.getStringExtra("theMessage");
-            mConversationArrayAdapter.add(mBTDevice.getName() + ": " + readMessage);
+            String incomingMessage = intent.getStringExtra("theMessage");
+            mConversationArrayAdapter.add(mBTDevice.getName() + ": " + incomingMessage);
         }
     };
 

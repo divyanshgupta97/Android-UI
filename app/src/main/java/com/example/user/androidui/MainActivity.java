@@ -82,8 +82,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private ArrayList<Character> mMapDescriptor;
 
-    private static final String MAP_DESCRIPTOR_STRING = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-//    private static final String MAP_DESCRIPTOR_STRING = "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111000111111111111000111111111111000111111111111000111111111111111111111111111111111111111111111111111111111444111111111111443111111111111444111111111111111111111111111111111111111111111111111111111111111111";
+    private static final String MAP_DESCRIPTOR_STRING = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000434000000000000444000000000000444000000000000";
 
     private SensorManager sensorManager;
     private Sensor sensor;
@@ -349,16 +348,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         updateConnTV();
     }
 
-    public void startBTConnection(View view){
-        if(mBTDevice == null){
-            Toast.makeText(this, "No paired device available.", Toast.LENGTH_SHORT).show();
-        } else{
-            Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
-            ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService
-                    .startClient(mBTDevice,MY_UUID_INSECURE, this);
-        }
-    }
-
     public void stopBTConnection(View view){
         if(mBTDevice == null){
             Toast.makeText(this, "No bluetooth device paired", Toast.LENGTH_SHORT);
@@ -367,44 +356,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
-    public void makeDiscoverable(View view){
-        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-        startActivity(discoverableIntent);
-    }
-
     private BroadcastReceiver mIncomingMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String incomingMessage = intent.getStringExtra("theMessage");
             incomingMessage = incomingMessage.substring(4, incomingMessage.length());
-//            if(incomingMessage.contains("status")){
-//                robotStatusTV.setText(incomingMessage);
-//            }
-//            if(incomingMessage.contains("grid")){
-//                JSONObject gridJSON = Utils.getJSONObject(incomingMessage);
-//                String gridString = Utils.getJSONString(gridJSON, "grid");
-//                mMapDescriptor = Utils.getMapDescriptor(gridString);
-//                mGridViewAdapter.refreshMap(mMapDescriptor);
-//            }
-//            if(incomingMessage.contains("robotPosition")){
-//                JSONObject robotJSON = Utils.getJSONObject(incomingMessage);
-//                int[] robotPosition = Utils.getJSONArray(robotJSON, "robotPosition");
-//                Log.d(TAG, "robotPosition: " + robotPosition[0] + ", " + robotPosition[1] + ", " + robotPosition[2]);
-//                mMapDescriptor = Utils.robotPositionChanged(mMapDescriptor, robotPosition, NUM_COLS);
-//                mGridViewAdapter.refreshMap(mMapDescriptor);
-//            }
 
             JSONObject messageJSON = Utils.getJSONObject(incomingMessage);
 
             String mazeString = Utils.getJSONString(messageJSON, "maze");
-//            String descriptorStringOne = Utils.getJSONString(messageJSON, "descriptorStringOne");
-//            String descriptorStringTwo = Utils.getJSONString(messageJSON, "descriptorStringTwo");
-
             mMapDescriptor = Utils.getMapDescriptor(mazeString);
             mGridViewAdapter.refreshMap(mMapDescriptor);
-
-
         }
     };
 

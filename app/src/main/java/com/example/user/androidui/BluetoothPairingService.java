@@ -16,9 +16,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.UUID;
 
 
 public class BluetoothPairingService extends Activity {
@@ -38,6 +40,9 @@ public class BluetoothPairingService extends Activity {
 
     private ArrayList<BluetoothDevice> mBTPairedDevices;
     private ArrayAdapter<String> mPairedDevicesArrayAdapter;
+
+    private static final UUID MY_UUID_INSECURE =
+            UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -206,7 +211,7 @@ public class BluetoothPairingService extends Activity {
     private void sendPairedDevice(BluetoothDevice bluetoothDevice){
         Intent sendPairedDeviceIntent = new Intent();
         sendPairedDeviceIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, bluetoothDevice);
-
+        startBTConnection(bluetoothDevice);
         setResult(Activity.RESULT_OK, sendPairedDeviceIntent);
         finish();
     }
@@ -224,5 +229,12 @@ public class BluetoothPairingService extends Activity {
         } catch (Exception e){
             Log.d(TAG, "Could not unpair: " + e.getMessage());
         }
+    }
+
+
+    public void startBTConnection(BluetoothDevice bluetoothDevice){
+            Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
+            ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService
+                    .startClient(bluetoothDevice,MY_UUID_INSECURE, this);
     }
 }
