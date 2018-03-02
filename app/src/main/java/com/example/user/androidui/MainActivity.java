@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -91,6 +92,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private SensorManager sensorManager;
     private Sensor sensor;
 
+    private Toast mToast;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         startCoordinateXCoordTV = (TextView) findViewById(R.id.start_coordinate_x);
         startCoordinateYCoordTV = (TextView) findViewById(R.id.start_coordinate_y);
 
-        gridUpdateBtn = (Button) findViewById(R.id.manual_update_btn);
+        gridUpdateBtn = (Button) findViewById(R.id.maze_update);
 
         gridUpdateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -130,32 +133,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             }
         });
 
-        connectToggleBtn = (ToggleButton) findViewById(R.id.connect_toggle_btn);
-        connectToggleBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if(isChecked){
-                    stopBTConnection();
-                }
-                else {
-                    Intent bluetoothConnectIntent = new Intent(MainActivity.this, BluetoothPairingService.class);
-                    startActivityForResult(bluetoothConnectIntent, REQUEST_DEVICE_CONNECT_INSECURE);
-                }
-            }
-        });
-
-        gridUpdateToggleBtn = (ToggleButton) findViewById(R.id.update_maze_toggle_btn);
-        gridUpdateToggleBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if(isChecked){
-                    gridUpdateBtn.setVisibility(View.VISIBLE);
-                }
-                else {
-                    gridUpdateBtn.setVisibility(View.INVISIBLE);
-                }
-            }
-        });
+//        TODO: Auto/Manual
+//        gridUpdateToggleBtn = (ToggleButton) findViewById(R.id.update_maze_toggle_btn);
+//        gridUpdateToggleBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+//                if(isChecked){
+//                    gridUpdateBtn.setVisibility(View.VISIBLE);
+//                }
+//                else {
+//                    gridUpdateBtn.setVisibility(View.INVISIBLE);
+//                }
+//            }
+//        });
 
         setupPreferenceStrings();
 
@@ -471,19 +461,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         writeOnOutputStream("r");
     }
 
-    public void sendForward(View view){
+    public void sendForward(){
         writeForward();
     }
 
-    public void sendLeft(View view){
+    public void sendLeft(){
         writeLeft();
     }
 
-    public void sendRight(View view){
+    public void sendRight(){
         writeRight();
     }
 
-    public void sendReverse(View view){
+    public void sendReverse(){
         writeReverse();
     }
 
@@ -530,6 +520,75 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private void updateStartCoordinatesTV(){
         startCoordinateXCoordTV.setText("X: " + startCoordinateXCoord);
         startCoordinateYCoordTV.setText("Y: " + startCoordinateYCoord);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent motionEvent) {
+        float x = motionEvent.getX();
+        float y = motionEvent.getY();
+        switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:
+                if (mToast != null)
+                    mToast.cancel();
+//                Toast.makeText(getApplicationContext(), "x = " + x + " y = " + y, Toast.LENGTH_SHORT).show();
+                if( x > 110 && x < 160 && y > 1000 && y < 1050  )
+                {
+                    sendForward();
+//                    mToast = Toast.makeText(getApplicationContext(), "Forward", Toast.LENGTH_SHORT);
+//                    mToast.show();
+                }
+                if( x > 110 && x < 160 && y > 1100 && y < 1160 )
+                {
+                    sendReverse();
+//                    mToast = Toast.makeText(getApplicationContext(), "Reverse", Toast.LENGTH_SHORT);
+//                    mToast.show();
+                }
+                if( x > 55 && x < 100 && y > 1050 && y < 1100 )
+                {
+                    sendLeft();
+//                    mToast = Toast.makeText(getApplicationContext(), "Left", Toast.LENGTH_SHORT);
+//                    mToast.show();
+                }
+                if( x > 160 && x < 220 && y > 1050 && y < 1100 )
+                {
+                    sendRight();
+//                    mToast = Toast.makeText(getApplicationContext(), "Right", Toast.LENGTH_SHORT);
+//                    mToast.show();
+                }
+                if( x > 295 && x < 375 && y > 1100 && y < 1200 )
+                {
+                    if (mBTDevice == null) {
+                        Intent bluetoothConnectIntent = new Intent(MainActivity.this, BluetoothPairingService.class);
+                        startActivityForResult(bluetoothConnectIntent, REQUEST_DEVICE_CONNECT_INSECURE);
+                        mToast = Toast.makeText(getApplicationContext(), "Connect", Toast.LENGTH_SHORT);
+                        mToast.show();
+                    }
+                    else {
+                        stopBTConnection();
+                        mToast = Toast.makeText(getApplicationContext(), "Disconnect", Toast.LENGTH_SHORT);
+                        mToast.show();
+                    }
+                }
+                if( x > 400 && x < 485 && y > 1100 && y < 1200 )
+                {
+                    mToast = Toast.makeText(getApplicationContext(), "Auto", Toast.LENGTH_SHORT);
+                    mToast.show();
+                }
+                if( x > 560 && x < 645 && y > 1050 && y < 1120 )
+                {
+                    mToast = Toast.makeText(getApplicationContext(), "Shortest", Toast.LENGTH_SHORT);
+                    mToast.show();
+                }
+                if( x > 670 && x < 760 && y > 1000 && y < 1080 )
+                {
+                    mToast = Toast.makeText(getApplicationContext(), "Explore", Toast.LENGTH_SHORT);
+                    mToast.show();
+                }
+
+
+                break;
+        }
+        return true;
     }
 
 }
