@@ -82,7 +82,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private ArrayList<Character> mMapDescriptor;
 
-    private static final String MAP_DESCRIPTOR_STRING = "000000000000000000000000000000000000000000000000000000000000000000000000000";
+    private static final String MAP_DESCRIPTOR_STRING = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+//    private static final String MAP_DESCRIPTOR_STRING = "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111000111111111111000111111111111000111111111111000111111111111111111111111111111111111111111111111111111111444111111111111443111111111111444111111111111111111111111111111111111111111111111111111111111111111";
 
     private SensorManager sensorManager;
     private Sensor sensor;
@@ -310,13 +311,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     if(type.equals("wayPoint")){
                         wayPointXCoord = Integer.toString(xCoord);
                         wayPointYCoord = Integer.toString(yCoord);;
-//                        sendWayPoint(xCoord, yCoord);
+                        sendWayPoint(xCoord, yCoord);
                         updateWayPointTV();
                     }
                     else{
                         startCoordinateXCoord = Integer.toString(xCoord);
                         startCoordinateYCoord = Integer.toString(yCoord);
-//                        sendStartCoordinates(xCoord, yCoord);
+                        sendStartCoordinates(xCoord, yCoord);
                         updateStartCoordinatesTV();
                     }
                 }
@@ -376,23 +377,34 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         @Override
         public void onReceive(Context context, Intent intent) {
             String incomingMessage = intent.getStringExtra("theMessage");
-            if(incomingMessage.contains("status")){
-                robotStatusTV.setText(incomingMessage);
-            }
-            if(incomingMessage.contains("grid")){
-                JSONObject gridJSON = Utils.getJSONObject(incomingMessage);
-                String gridString = Utils.getJSONString(gridJSON, "grid");
-                mMapDescriptor = Utils.getMapDescriptor(gridString);
-                mGridViewAdapter.refreshMap(mMapDescriptor);
-            }
-            if(incomingMessage.contains("robotPosition")){
-                JSONObject robotJSON = Utils.getJSONObject(incomingMessage);
-                int[] robotPosition = Utils.getJSONArray(robotJSON, "robotPosition");
-                Log.d(TAG, "robotPosition: " + robotPosition[0] + ", " + robotPosition[1] + ", " + robotPosition[2]);
-                mMapDescriptor = Utils.robotPositionChanged(mMapDescriptor, robotPosition, NUM_COLS);
-                mGridViewAdapter.refreshMap(mMapDescriptor);
-            }
-            Log.d(TAG, "Message from remote device: " + incomingMessage);
+            incomingMessage = incomingMessage.substring(4, incomingMessage.length());
+//            if(incomingMessage.contains("status")){
+//                robotStatusTV.setText(incomingMessage);
+//            }
+//            if(incomingMessage.contains("grid")){
+//                JSONObject gridJSON = Utils.getJSONObject(incomingMessage);
+//                String gridString = Utils.getJSONString(gridJSON, "grid");
+//                mMapDescriptor = Utils.getMapDescriptor(gridString);
+//                mGridViewAdapter.refreshMap(mMapDescriptor);
+//            }
+//            if(incomingMessage.contains("robotPosition")){
+//                JSONObject robotJSON = Utils.getJSONObject(incomingMessage);
+//                int[] robotPosition = Utils.getJSONArray(robotJSON, "robotPosition");
+//                Log.d(TAG, "robotPosition: " + robotPosition[0] + ", " + robotPosition[1] + ", " + robotPosition[2]);
+//                mMapDescriptor = Utils.robotPositionChanged(mMapDescriptor, robotPosition, NUM_COLS);
+//                mGridViewAdapter.refreshMap(mMapDescriptor);
+//            }
+
+            JSONObject messageJSON = Utils.getJSONObject(incomingMessage);
+
+            String mazeString = Utils.getJSONString(messageJSON, "maze");
+//            String descriptorStringOne = Utils.getJSONString(messageJSON, "descriptorStringOne");
+//            String descriptorStringTwo = Utils.getJSONString(messageJSON, "descriptorStringTwo");
+
+            mMapDescriptor = Utils.getMapDescriptor(mazeString);
+            mGridViewAdapter.refreshMap(mMapDescriptor);
+
+
         }
     };
 

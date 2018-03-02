@@ -28,12 +28,11 @@ public class GridViewAdapter extends BaseAdapter {
     private int mNumCols;
     private ArrayList<Character> mMapDescriptor;
 
-    public static final char FREE = '0';
-    public static final char OBSTACLE  ='1';
-//    public static final char FREE = '2';
-//    private static final char OBSTACLE = '3';
-    public static final char ROBOT_HEAD = '2';
-    public static final char ROBOT_BODY = '3';
+    public static final char UNEXPLORED = '0';
+    public static final char FREE  ='1';
+    public static final char OBSTACLE = '2';
+    public static final char ROBOT_HEAD = '3';
+    public static final char ROBOT_BODY = '4';
 
     public GridViewAdapter(Context context, int numRows, int numCols, ArrayList<Character> mapDescriptor){
         mContext = context;
@@ -89,9 +88,9 @@ public class GridViewAdapter extends BaseAdapter {
             case FREE:
                 view.setBackgroundResource(R.drawable.cell_item_1);
                 break;
-//            case OBSTACLE:
-//                view.setBackgroundResource(R.drawable.cell_item_2);
-//                break;
+            case OBSTACLE:
+                view.setBackgroundResource(R.drawable.cell_item_2);
+                break;
             case ROBOT_HEAD:
                 view.setBackgroundResource(R.drawable.cell_item_3);
                 break;

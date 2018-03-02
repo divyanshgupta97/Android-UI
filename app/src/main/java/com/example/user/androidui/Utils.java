@@ -54,12 +54,12 @@ public class Utils {
 
     public static ArrayList<Character> getMapDescriptor(String mapDescriptorString){
         ArrayList<Character> mapDescriptor = new ArrayList<Character>();
-        Log.d(TAG, "hexString length: " + mapDescriptorString.length());
-        String binString = hexToBin(mapDescriptorString);
-        Log.d(TAG, "binString length: " + binString.length());
+//        Log.d(TAG, "hexString length: " + mapDescriptorString.length());
+//        String binString = hexToBin(mapDescriptorString);
+//        Log.d(TAG, "binString length: " + binString.length());
 
-        for(int i = 0; i < binString.length(); ++i)
-            mapDescriptor.add(binString.charAt(i));
+        for(int i = 0; i < mapDescriptorString.length(); ++i)
+            mapDescriptor.add(mapDescriptorString.charAt(i));
 
         return mapDescriptor;
     }
