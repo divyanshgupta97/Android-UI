@@ -1,5 +1,5 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -68,8 +68,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <TextView
-                android:id="@+id/waypoint_TV"
+                android:layout_marginTop="10dp"
+                android:id="@+id/connected_device"
                 android:layout_below="@id/start_shortest_path_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:layout_marginTop="10dp"
+                android:id="@+id/waypoint_TV"
+                android:layout_below="@id/connected_device"
                 android:text="WayPoint:"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -84,6 +91,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <TextView
+                android:layout_marginTop="10dp"
                 android:id="@+id/start_coordinate_TV"
                 android:layout_below="@id/waypoint_y"
                 android:text="Start Coordinates:"
@@ -99,6 +107,18 @@
                 android:layout_below="@id/start_coordinate_x"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
+            <TextView
+                android:layout_marginTop="10dp"
+                android:id="@+id/robot_status_title"
+                android:text="@string/robot_status_title"
+                android:layout_below="@id/start_coordinate_y"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/robot_status"
+                android:layout_below="@id/robot_status_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         </RelativeLayout>
     </LinearLayout>
     <LinearLayout
@@ -108,85 +128,31 @@
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-            <Button
-                android:id="@+id/forward"
-                android:layout_marginLeft="42dp"
-                android:onClick="sendForward"
-                android:text="Forward"
+            <ImageView
+                android:id="@+id/control_btn"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <Button
-                android:id="@+id/left"
-                android:layout_marginTop="40dp"
-                android:onClick="sendLeft"
-                android:text="Left"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="30dp"
+                app:srcCompat="@drawable/control_button" />
+            <ImageView
+                android:id="@+id/select_btn"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <Button
-                android:id="@+id/right"
-                android:layout_toRightOf="@+id/left"
-                android:layout_marginTop="40dp"
-                android:onClick="sendRight"
-                android:text="Right"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/control_btn"
+                android:layout_alignBottom="@id/control_btn"
+                android:layout_marginStart="60dp"
+                app:srcCompat="@drawable/select_button" />
+            <ImageView
+                android:id="@+id/ab_btn"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <Button
-                android:id="@+id/reverse"
-                android:layout_below="@+id/left"
-                android:onClick="sendReverse"
-                android:layout_marginLeft="42dp"
-                android:text="Reverse"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <Button
-                android:id="@+id/start_conn"
-                android:layout_marginTop="40dp"
-                android:layout_toRightOf="@id/right"
-                android:onClick="startBTConnection"
-                android:layout_marginLeft="20dp"
-                android:text="Start Connection"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <Button
-                android:id="@+id/stop_conn"
-                android:layout_marginTop="40dp"
-                android:layout_toRightOf="@id/start_conn"
-                android:onClick="stopBTConnection"
-                android:layout_marginLeft="20dp"
-                android:text="Stop Connection"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <Button
-                android:id="@+id/make_discoverable"
-                android:layout_below="@id/start_conn"
-                android:layout_toRightOf="@id/right"
-                android:onClick="makeDiscoverable"
-                android:layout_marginLeft="20dp"
-                android:text="Make Discoverable"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <TextView
-                android:id="@+id/robot_status_title"
-                android:text="@string/robot_status_title"
-                android:layout_marginLeft="20dp"
-                android:layout_toRightOf="@id/start_conn"
-                android:layout_below="@id/stop_conn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <TextView
-                android:id="@+id/robot_status"
-                android:layout_marginLeft="20dp"
-                android:layout_below="@id/robot_status_title"
-                android:layout_toRightOf="@id/start_conn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <TextView
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="70dp"
-                android:id="@+id/connected_device"
-                android:layout_toRightOf="@id/forward"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ab_button"
+                android:layout_marginStart="50dp"
+                android:layout_toEndOf="@id/select_btn"/>
+
         </RelativeLayout>
+
     </LinearLayout>
 </LinearLayout>

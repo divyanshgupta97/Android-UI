@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.TextView;
@@ -349,7 +350,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         updateConnTV();
     }
 
-    public void startBTConnection(View view){
+    public void startBTConnection(){
         if(mBTDevice == null){
             Toast.makeText(this, "No paired device available.", Toast.LENGTH_SHORT).show();
         } else{
@@ -359,18 +360,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
-    public void stopBTConnection(View view){
+    public void stopBTConnection(){
         if(mBTDevice == null){
             Toast.makeText(this, "No bluetooth device paired", Toast.LENGTH_SHORT);
         } else {
             ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.disconnectConn();
         }
-    }
-
-    public void makeDiscoverable(View view){
-        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-        startActivity(discoverableIntent);
     }
 
     private BroadcastReceiver mIncomingMessageReceiver = new BroadcastReceiver() {
@@ -457,19 +452,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         writeOnOutputStream("r");
     }
 
-    public void sendForward(View view){
+    public void sendForward(){
         writeForward();
     }
 
-    public void sendLeft(View view){
+    public void sendLeft(){
         writeLeft();
     }
 
-    public void sendRight(View view){
+    public void sendRight(){
         writeRight();
     }
 
-    public void sendReverse(View view){
+    public void sendReverse(){
         writeReverse();
     }
 
@@ -520,6 +515,74 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private void updateStartCoordinatesTV(){
         startCoordinateXCoordTV.setText(startCoordinateXCoord);
         startCoordinateYCoordTV.setText(startCoordinateYCoord);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent motionEvent) {
+        float x = motionEvent.getX();
+        float y = motionEvent.getY();
+        switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:
+                if (mToast != null)
+                    mToast.cancel();
+//                Toast.makeText(getApplicationContext(), "x = " + x + " y = " + y, Toast.LENGTH_SHORT).show();
+                if( x > 110 && x < 160 && y > 1000 && y < 1050  )
+                {
+                    sendForward();
+//                    mToast = Toast.makeText(getApplicationContext(), "Forward", Toast.LENGTH_SHORT);
+//                    mToast.show();
+                }
+                if( x > 110 && x < 160 && y > 1100 && y < 1160 )
+                {
+                    sendReverse();
+//                    mToast = Toast.makeText(getApplicationContext(), "Reverse", Toast.LENGTH_SHORT);
+//                    mToast.show();
+                }
+                if( x > 55 && x < 100 && y > 1050 && y < 1100 )
+                {
+                    sendLeft();
+//                    mToast = Toast.makeText(getApplicationContext(), "Left", Toast.LENGTH_SHORT);
+//                    mToast.show();
+                }
+                if( x > 160 && x < 220 && y > 1050 && y < 1100 )
+                {
+                    sendRight();
+//                    mToast = Toast.makeText(getApplicationContext(), "Right", Toast.LENGTH_SHORT);
+//                    mToast.show();
+                }
+                if( x > 295 && x < 375 && y > 1100 && y < 1200 )
+                {
+                    if (mBTDevice == null) {
+                        startBTConnection();
+                        mToast = Toast.makeText(getApplicationContext(), "Connect", Toast.LENGTH_SHORT);
+                        mToast.show();
+                    }
+                    else {
+                        stopBTConnection();
+                        mToast = Toast.makeText(getApplicationContext(), "Disconnect", Toast.LENGTH_SHORT);
+                        mToast.show();
+                    }
+                }
+                if( x > 400 && x < 485 && y > 1100 && y < 1200 )
+                {
+                    mToast = Toast.makeText(getApplicationContext(), "Auto", Toast.LENGTH_SHORT);
+                    mToast.show();
+                }
+                if( x > 560 && x < 645 && y > 1050 && y < 1120 )
+                {
+                    mToast = Toast.makeText(getApplicationContext(), "Shortest", Toast.LENGTH_SHORT);
+                    mToast.show();
+                }
+                if( x > 670 && x < 760 && y > 1000 && y < 1080 )
+                {
+                    mToast = Toast.makeText(getApplicationContext(), "Explore", Toast.LENGTH_SHORT);
+                    mToast.show();
+                }
+
+
+                break;
+        }
+        return true;
     }
 
 }
