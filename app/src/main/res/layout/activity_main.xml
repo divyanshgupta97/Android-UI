@@ -39,24 +39,10 @@
                 android:text="update"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
-            <Button
-                android:id="@+id/start_exploration_btn"
-                android:text="Explore"
-                android:onClick="startExploration"
-                android:layout_below="@id/maze_update"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <Button
-                android:id="@+id/start_shortest_path_btn"
-                android:text="Shortest"
-                android:onClick="startShortestPath"
-                android:layout_below="@id/start_exploration_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
             <TextView
                 android:layout_marginTop="10dp"
                 android:id="@+id/connected_device"
-                android:layout_below="@id/start_shortest_path_btn"
+                android:layout_below="@id/maze_update"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <TextView
