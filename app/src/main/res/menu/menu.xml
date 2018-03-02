@@ -6,11 +6,15 @@
         android:title="@string/action_chat"
         app:showAsAction="ifRoom"/>
     <item
-        android:id="@+id/action_bluetooth"
-        android:title="@string/action_connect"
-        app:showAsAction="ifRoom"/>
-    <item
         android:id="@+id/action_reconfigure"
         android:title="@string/action_reconfigure"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_send_f1"
+        android:title="@string/action_send_f1"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_send_f2"
+        android:title="@string/action_send_f2"
         app:showAsAction="never"/>
 </menu>

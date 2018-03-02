@@ -34,21 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent">
             <Button
-                android:id="@+id/f1"
-                android:text="F1"
-                android:onClick="sendF1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <Button
-                android:id="@+id/f2"
-                android:text="F2"
-                android:onClick="sendF2"
-                android:layout_below="@+id/f1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <Button
                 android:id="@+id/maze_update"
-                android:layout_below="@id/f2"
                 android:onClick="askForGrid"
                 android:text="update"
                 android:layout_width="wrap_content"

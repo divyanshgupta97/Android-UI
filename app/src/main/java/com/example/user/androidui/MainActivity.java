@@ -23,9 +23,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.example.user.androidui.Adapters.GridAxisAdapter;
 import com.example.user.androidui.Adapters.GridViewAdapter;
@@ -44,10 +47,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private Handler mHandler;
 
-    private Toast mToast;
-
     private GridView mGridView;
     private GridViewAdapter mGridViewAdapter;
+
+    private ToggleButton connectToggleBtn;
+    private ToggleButton gridUpdateToggleBtn;
+
+    private Button gridUpdateBtn;
 
     private static final int NUM_ROWS = 20;
     private static final int NUM_COLS = 15;
@@ -78,16 +84,15 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private BluetoothAdapter mBTAdapter;
     private BluetoothDevice mBTDevice;
-    private static final UUID MY_UUID_INSECURE =
-            UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     private ArrayList<Character> mMapDescriptor;
 
-    private static final String MAP_DESCRIPTOR_STRING = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-//    private static final String MAP_DESCRIPTOR_STRING = "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111000111111111111000111111111111000111111111111000111111111111111111111111111111111111111111111111111111111444111111111111443111111111111444111111111111111111111111111111111111111111111111111111111111111111";
+    private static final String MAP_DESCRIPTOR_STRING = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000434000000000000444000000000000444000000000000";
 
     private SensorManager sensorManager;
     private Sensor sensor;
+
+    private Toast mToast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +123,29 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         wayPointYCoordTV = (TextView) findViewById(R.id.waypoint_y);
         startCoordinateXCoordTV = (TextView) findViewById(R.id.start_coordinate_x);
         startCoordinateYCoordTV = (TextView) findViewById(R.id.start_coordinate_y);
+
+        gridUpdateBtn = (Button) findViewById(R.id.maze_update);
+
+        gridUpdateBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mGridViewAdapter.refreshMap(mMapDescriptor);
+            }
+        });
+
+//        TODO: Auto/Manual
+//        gridUpdateToggleBtn = (ToggleButton) findViewById(R.id.update_maze_toggle_btn);
+//        gridUpdateToggleBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+//                if(isChecked){
+//                    gridUpdateBtn.setVisibility(View.VISIBLE);
+//                }
+//                else {
+//                    gridUpdateBtn.setVisibility(View.INVISIBLE);
+//                }
+//            }
+//        });
 
         setupPreferenceStrings();
 
@@ -252,12 +280,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         int itemId = menuItem.getItemId();
 
         switch(itemId){
-            case R.id.action_bluetooth:{
-                Intent bluetoothConnectIntent = new Intent(this, BluetoothPairingService.class);
-                startActivityForResult(bluetoothConnectIntent, REQUEST_DEVICE_CONNECT_INSECURE);
-                return true;
-            }
-
             case R.id.action_chat:{
                 if(mBTDevice == null){
                     Toast.makeText(this, "No Bluetooth device connected", Toast.LENGTH_SHORT).show();
@@ -274,6 +296,16 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 return true;
             }
 
+            case R.id.action_send_f1:{
+                sendF1();
+                return true;
+            }
+
+            case R.id.action_send_f2:{
+                sendF2();
+                return true;
+            }
+
             default:{
                 return super.onOptionsItemSelected(menuItem);
             }
@@ -286,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             case REQUEST_ENABLE_BT: {
                 if(resultCode != Activity.RESULT_OK){
                     Toast.makeText(this, "Could not enable Bluetooth.", Toast.LENGTH_SHORT).show();
-                    finish();
+                    connectToggleBtn.setChecked(false);
                 } else {
                     Toast.makeText(this, "Bluetooth enabled.", Toast.LENGTH_SHORT).show();
                 }
@@ -350,19 +382,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         updateConnTV();
     }
 
-    public void startBTConnection(){
-        if(mBTDevice == null){
-            Toast.makeText(this, "No paired device available.", Toast.LENGTH_SHORT).show();
-        } else{
-            Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
-            ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService
-                    .startClient(mBTDevice,MY_UUID_INSECURE, this);
-        }
-    }
-
     public void stopBTConnection(){
         if(mBTDevice == null){
-            Toast.makeText(this, "No bluetooth device paired", Toast.LENGTH_SHORT);
+            Toast.makeText(this, "No Bluetooth Device Paired", Toast.LENGTH_SHORT);
         } else {
             ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.disconnectConn();
         }
@@ -373,33 +395,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         public void onReceive(Context context, Intent intent) {
             String incomingMessage = intent.getStringExtra("theMessage");
             incomingMessage = incomingMessage.substring(4, incomingMessage.length());
-//            if(incomingMessage.contains("status")){
-//                robotStatusTV.setText(incomingMessage);
-//            }
-//            if(incomingMessage.contains("grid")){
-//                JSONObject gridJSON = Utils.getJSONObject(incomingMessage);
-//                String gridString = Utils.getJSONString(gridJSON, "grid");
-//                mMapDescriptor = Utils.getMapDescriptor(gridString);
-//                mGridViewAdapter.refreshMap(mMapDescriptor);
-//            }
-//            if(incomingMessage.contains("robotPosition")){
-//                JSONObject robotJSON = Utils.getJSONObject(incomingMessage);
-//                int[] robotPosition = Utils.getJSONArray(robotJSON, "robotPosition");
-//                Log.d(TAG, "robotPosition: " + robotPosition[0] + ", " + robotPosition[1] + ", " + robotPosition[2]);
-//                mMapDescriptor = Utils.robotPositionChanged(mMapDescriptor, robotPosition, NUM_COLS);
-//                mGridViewAdapter.refreshMap(mMapDescriptor);
-//            }
 
             JSONObject messageJSON = Utils.getJSONObject(incomingMessage);
-
             String mazeString = Utils.getJSONString(messageJSON, "maze");
-//            String descriptorStringOne = Utils.getJSONString(messageJSON, "descriptorStringOne");
-//            String descriptorStringTwo = Utils.getJSONString(messageJSON, "descriptorStringTwo");
-
             mMapDescriptor = Utils.getMapDescriptor(mazeString);
-            mGridViewAdapter.refreshMap(mMapDescriptor);
 
-
+            if(!gridUpdateToggleBtn.isChecked()){
+                mGridViewAdapter.refreshMap(mMapDescriptor);
+            }
         }
     };
 
@@ -432,8 +435,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     };
 
     private void writeOnOutputStream(String message){
-        byte[] bytes = message.toString().getBytes(Charset.defaultCharset());
-        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+        if(mBTDevice == null){
+            Toast.makeText(this, "No Bluetooth Device Connected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        else {
+            byte[] bytes = message.toString().getBytes(Charset.defaultCharset());
+            ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService.write(bytes);
+        }
     }
 
     private void writeForward(){
@@ -468,11 +477,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         writeReverse();
     }
 
-    public void sendF1(View view){
+    public void sendF1(){
         writeOnOutputStream(f1String);
     }
 
-    public void sendF2(View view){
+    public void sendF2(){
         writeOnOutputStream(f2String);
     }
 
@@ -492,29 +501,25 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         writeOnOutputStream("wayPoint(" + Integer.toString(x) + ", " + Integer.toString(y) + ")");
     }
 
-    public void askForGrid(View view){
-        writeOnOutputStream("sendArena");
-    }
-
     private void updateConnTV(){
         if(mBTDevice != null){
             connDeviceTV.setText("Connected Device: " + mBTDevice.getName().toString());
             connDeviceTV.setVisibility(View.VISIBLE);
         }
         else{
-            connDeviceTV.setText("");
+            connDeviceTV.setText("Connected Device:");
             connDeviceTV.setVisibility(View.INVISIBLE);
         }
     }
 
     private void updateWayPointTV(){
-        wayPointXCoordTV.setText(wayPointXCoord);
-        wayPointYCoordTV.setText(wayPointYCoord);
+        wayPointXCoordTV.setText("X: " + wayPointXCoord);
+        wayPointYCoordTV.setText("Y: " + wayPointYCoord);
     }
 
     private void updateStartCoordinatesTV(){
-        startCoordinateXCoordTV.setText(startCoordinateXCoord);
-        startCoordinateYCoordTV.setText(startCoordinateYCoord);
+        startCoordinateXCoordTV.setText("X: " + startCoordinateXCoord);
+        startCoordinateYCoordTV.setText("Y: " + startCoordinateYCoord);
     }
 
     @Override
@@ -553,7 +558,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 if( x > 295 && x < 375 && y > 1100 && y < 1200 )
                 {
                     if (mBTDevice == null) {
-                        startBTConnection();
+                        Intent bluetoothConnectIntent = new Intent(MainActivity.this, BluetoothPairingService.class);
+                        startActivityForResult(bluetoothConnectIntent, REQUEST_DEVICE_CONNECT_INSECURE);
                         mToast = Toast.makeText(getApplicationContext(), "Connect", Toast.LENGTH_SHORT);
                         mToast.show();
                     }
