@@ -539,18 +539,18 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 //                    mToast = Toast.makeText(getApplicationContext(), "Right", Toast.LENGTH_SHORT);
 //                    mToast.show();
                 }
-                if (x > 295 && x < 375 && y > 1100 && y < 1200) {
+                if (x > 300 && x < 375 && y > 1120 && y < 1170) {
                     //TODO: Connect Bluetooth
                     if (mBTDevice == null) {
-                        connectTV.setText(R.string.disconnect);
                         Intent bluetoothConnectIntent = new Intent(MainActivity.this, BluetoothPairingService.class);
                         startActivityForResult(bluetoothConnectIntent, REQUEST_DEVICE_CONNECT_INSECURE);
+                        connectTV.setText(R.string.disconnect);
                     } else {
-                        connectTV.setText(R.string.connect);
                         stopBTConnection();
+                        connectTV.setText(R.string.connect);
                     }
                 }
-                if (x > 400 && x < 500 && y > 1050 && y < 1200) {
+                if (x > 420 && x < 490 && y > 1120 && y < 1170) {
                     if (isAuto) {
                         isAuto = false;
                         gridUpdateBtn.setEnabled(false);
