@@ -63,7 +63,7 @@
                 android:layout_marginTop="10dp"
                 android:id="@+id/waypoint_TV"
                 android:layout_below="@id/connected_device"
-                android:text="WayPoint:"
+                android:text="@string/waypoint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <TextView
@@ -80,7 +80,7 @@
                 android:layout_marginTop="10dp"
                 android:id="@+id/start_coordinate_TV"
                 android:layout_below="@id/waypoint_y"
-                android:text="Start Coordinates:"
+                android:text="@string/start_coordinates"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <TextView
@@ -127,9 +127,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/control_btn"
-                android:layout_alignBottom="@id/control_btn"
+                android:layout_marginTop="50dp"
                 android:layout_marginStart="60dp"
                 app:srcCompat="@drawable/select_button" />
+            <TextView
+                android:id="@+id/tv_connect_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="92dp"
+                android:layout_alignStart="@id/select_btn"
+                android:text="@string/connect"
+                android:rotation="-25" />
+            <TextView
+                android:id="@+id/tv_auto_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="45dp"
+                android:layout_marginTop="90dp"
+                android:layout_toEndOf="@+id/tv_connect_btn"
+                android:text="@string/auto"
+                android:rotation="-25" />
             <ImageView
                 android:id="@+id/ab_btn"
                 android:layout_width="wrap_content"
