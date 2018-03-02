@@ -540,6 +540,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 //                    mToast.show();
                 }
                 if (x > 295 && x < 375 && y > 1100 && y < 1200) {
+                    //TODO: Connect Bluetooth
                     if (mBTDevice == null) {
                         connectTV.setText(R.string.disconnect);
                         Intent bluetoothConnectIntent = new Intent(MainActivity.this, BluetoothPairingService.class);
@@ -549,7 +550,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                         stopBTConnection();
                     }
                 }
-                if (x > 400 && x < 485 && y > 1100 && y < 1200) {
+                if (x > 400 && x < 500 && y > 1050 && y < 1200) {
                     if (isAuto) {
                         isAuto = false;
                         gridUpdateBtn.setEnabled(false);
