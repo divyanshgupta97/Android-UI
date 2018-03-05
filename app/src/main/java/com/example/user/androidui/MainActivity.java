@@ -133,6 +133,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setIcon(R.drawable.ic_logo);
+
+
         mGridView = (GridView) findViewById(R.id.maze);
         xAxis = (GridView) findViewById(R.id.x_axis);
         yAxis = (GridView) findViewById(R.id.y_axis);
