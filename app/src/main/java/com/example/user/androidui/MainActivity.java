@@ -78,6 +78,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private SensorManager sensorManager;
     private Sensor sensor;
 
+    private static final UUID MY_UUID_INSECURE =
+            UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
     private Toast mToast;
     private Boolean isAuto = true;
     private TextView connectTV;
@@ -362,6 +365,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
             case REQUEST_DEVICE_CONNECT_INSECURE: {
                 if (resultCode == Activity.RESULT_OK) {
+
                     initializeNewBTDevice(receivedIntent);
                 }
                 break;
@@ -413,6 +417,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private void initializeNewBTDevice(Intent intent) {
         mBTDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+        startBTConnection(mBTDevice);
         updateConnTV();
     }
 
@@ -549,6 +554,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                         stopBTConnection();
                         connectTV.setText(R.string.connect);
                     }
+                    return true;
                 }
                 if (x > 420 && x < 490 && y > 1120 && y < 1170) {
                     if (isAuto) {
@@ -572,11 +578,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 //                    mToast = Toast.makeText(getApplicationContext(), "Explore", Toast.LENGTH_SHORT);
 //                    mToast.show();
                 }
-
-
                 break;
         }
         return true;
     }
 
+    public void startBTConnection(BluetoothDevice bluetoothDevice){
+        Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
+        ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService
+                .startClient(bluetoothDevice,MY_UUID_INSECURE, this);
+    }
 }
