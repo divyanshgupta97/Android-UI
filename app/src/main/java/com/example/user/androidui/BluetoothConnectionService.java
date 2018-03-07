@@ -30,7 +30,6 @@ public class BluetoothConnectionService {
 
     private final Context mContext;
 
-
     private AcceptThread mInsecureAcceptThread;
     private ConnectThread mConnectThread;
     private ConnectedThread mConnectedThread;
@@ -201,7 +200,7 @@ public class BluetoothConnectionService {
         }
 
         public void run(){
-            byte[] buffer = new byte[4096];
+            byte[] buffer = new byte[2048];
             int bytes;
 
             while (true) {

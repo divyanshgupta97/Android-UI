@@ -16,11 +16,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.UUID;
 
 
 public class BluetoothPairingService extends Activity {
@@ -76,7 +74,7 @@ public class BluetoothPairingService extends Activity {
         unpairBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                unpairDevices();
+                forgetPairedDevices();
             }
         });
 
@@ -212,7 +210,7 @@ public class BluetoothPairingService extends Activity {
         finish();
     }
 
-    private void unpairDevices(){
+    private void forgetPairedDevices(){
         for(BluetoothDevice pairedDevice : mBTPairedDevices)
             unpairDevice(pairedDevice);
     }

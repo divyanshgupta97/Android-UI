@@ -24,11 +24,9 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.example.user.androidui.Adapters.GridAxisAdapter;
 import com.example.user.androidui.Adapters.GridViewAdapter;
@@ -43,124 +41,86 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, SensorEventListener {
 
-    public static final int REQUEST_COORDINATES = 2;
     private static final String TAG = "MainActivity";
+
     private static final int NUM_ROWS = 20;
     private static final int NUM_COLS = 15;
+
     private static final int REQUEST_ENABLE_BT = 0;
     private static final int REQUEST_DEVICE_CONNECT_INSECURE = 1;
-    private static final String MAP_DESCRIPTOR_STRING = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000434000000000000444000000000000444000000000000";
+    public static final int REQUEST_COORDINATES = 2;
+
     private Handler mHandler;
+
     private GridView mGridView;
+    private GridView mXAxis;
+    private GridView mYAxis;
+
     private GridViewAdapter mGridViewAdapter;
-    private ToggleButton connectToggleBtn;
-    private ToggleButton gridUpdateToggleBtn;
+    private GridAxisAdapter mXAxisAdapter;
+    private GridAxisAdapter mYAxisAdapter;
+
     private Button gridUpdateBtn;
-    private GridView xAxis;
-    private GridAxisAdapter xAxisAdapter;
-    private GridView yAxis;
-    private GridAxisAdapter yAxisAdapter;
-    private TextView connDeviceTV;
-    private TextView robotStatusTV;
-    private TextView wayPointXCoordTV;
-    private TextView wayPointYCoordTV;
-    private TextView startCoordinateXCoordTV;
-    private TextView startCoordinateYCoordTV;
-    private String f1String;
-    private String f2String;
-    private String wayPointXCoord;
-    private String wayPointYCoord;
-    private String startCoordinateXCoord;
-    private String startCoordinateYCoord;
+
+    private String mF1String;
+    private String mF2String;
+    private String mWayPointXCoord;
+    private String mWayPointYCoord;
+    private String mStartCoordinateXCoord;
+    private String mStartCoordinateYCoord;
+
+    private TextView mConnDeviceTV;
+    private TextView mRobotStatusTV;
+    private TextView mWayPointXCoordTV;
+    private TextView mWayPointYCoordTV;
+    private TextView mStartCoordinateXCoordTV;
+    private TextView mStartCoordinateYCoordTV;
+
     private BluetoothAdapter mBTAdapter;
     private BluetoothDevice mBTDevice;
-    private ArrayList<Character> mMapDescriptor;
+    private static final UUID MY_UUID_INSECURE = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
     private SensorManager sensorManager;
     private Sensor sensor;
 
-    private static final UUID MY_UUID_INSECURE =
-            UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     private Toast mToast;
     private Boolean isAuto = true;
     private TextView connectTV;
     private TextView autoTV;
-    private BroadcastReceiver mIncomingMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String incomingMessage = intent.getStringExtra("theMessage");
-            incomingMessage = incomingMessage.substring(4, incomingMessage.length());
 
-            JSONObject messageJSON = Utils.getJSONObject(incomingMessage);
-            String mazeString = Utils.getJSONString(messageJSON, "maze");
-            mMapDescriptor = Utils.getMapDescriptor(mazeString);
-
-            if (!gridUpdateToggleBtn.isChecked()) {
-                mGridViewAdapter.refreshMap(mMapDescriptor);
-            }
-        }
-    };
-    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
-                BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-                if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
-                    Log.d(TAG, "BroadcastReceiver: BOND_BONDED.");
-                    mBTDevice = bluetoothDevice;
-                    updateConnTV();
-                }
-
-                if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDING) {
-                    Log.d(TAG, "BroadcastReceiver: BOND_BONDING.");
-                }
-
-                if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE) {
-                    Log.d(TAG, "BroadcastReceiver: BOND_NONE.");
-                    if (bluetoothDevice.equals(mBTDevice)) {
-                        mBTDevice = null;
-                        updateConnTV();
-                    }
-                }
-            }
-        }
-    };
+    private ArrayList<Character> mMapDescriptor;
+    private static final String MAP_DESCRIPTOR_STRING = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000434000000000000444000000000000444000000000000";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setIcon(R.drawable.ic_logo);
-
-
         mGridView = (GridView) findViewById(R.id.maze);
-        xAxis = (GridView) findViewById(R.id.x_axis);
-        yAxis = (GridView) findViewById(R.id.y_axis);
+        mXAxis = (GridView) findViewById(R.id.x_axis);
+        mYAxis = (GridView) findViewById(R.id.y_axis);
 
         mGridView.setNumColumns(NUM_COLS);
-        xAxis.setNumColumns(NUM_COLS);
-        yAxis.setNumColumns(1);
+        mXAxis.setNumColumns(NUM_COLS);
+        mYAxis.setNumColumns(1);
 
         mMapDescriptor = Utils.getMapDescriptor(MAP_DESCRIPTOR_STRING);
 
         mGridViewAdapter = new GridViewAdapter(MainActivity.this, NUM_ROWS, NUM_COLS, mMapDescriptor);
-        xAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_COLS);
-        yAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_ROWS);
+        mXAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_COLS);
+        mYAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_ROWS);
 
         mGridView.setAdapter(mGridViewAdapter);
-        xAxis.setAdapter(xAxisAdapter);
-        yAxis.setAdapter(yAxisAdapter);
+        mXAxis.setAdapter(mXAxisAdapter);
+        mYAxis.setAdapter(mYAxisAdapter);
 
-        connDeviceTV = (TextView) findViewById(R.id.connected_device);
-        robotStatusTV = (TextView) findViewById(R.id.robot_status);
-        wayPointXCoordTV = (TextView) findViewById(R.id.waypoint_x);
-        wayPointYCoordTV = (TextView) findViewById(R.id.waypoint_y);
-        startCoordinateXCoordTV = (TextView) findViewById(R.id.start_coordinate_x);
-        startCoordinateYCoordTV = (TextView) findViewById(R.id.start_coordinate_y);
+        mConnDeviceTV = (TextView) findViewById(R.id.connected_device);
+        mRobotStatusTV = (TextView) findViewById(R.id.robot_status);
+        mWayPointXCoordTV = (TextView) findViewById(R.id.waypoint_x);
+        mWayPointYCoordTV = (TextView) findViewById(R.id.waypoint_y);
+        mStartCoordinateXCoordTV = (TextView) findViewById(R.id.start_coordinate_x);
+        mStartCoordinateYCoordTV = (TextView) findViewById(R.id.start_coordinate_y);
 
         gridUpdateBtn = (Button) findViewById(R.id.maze_update);
 
@@ -199,6 +159,46 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 //        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 //        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
     }
+
+    private BroadcastReceiver mIncomingMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String incomingMessage = intent.getStringExtra("theMessage");
+            incomingMessage = incomingMessage.substring(4, incomingMessage.length());
+
+            JSONObject messageJSON = Utils.getJSONObject(incomingMessage);
+            String mazeString = Utils.getJSONString(messageJSON, "maze");
+            mMapDescriptor = Utils.getMapDescriptor(mazeString);
+            mGridViewAdapter.refreshMap(mMapDescriptor);
+        }
+    };
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
+                BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+                if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
+                    Log.d(TAG, "BroadcastReceiver: BOND_BONDED.");
+                    mBTDevice = bluetoothDevice;
+                    updateConnTV();
+                }
+
+                if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDING) {
+                    Log.d(TAG, "BroadcastReceiver: BOND_BONDING.");
+                }
+
+                if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE) {
+                    Log.d(TAG, "BroadcastReceiver: BOND_NONE.");
+                    if (bluetoothDevice.equals(mBTDevice)) {
+                        mBTDevice = null;
+                        updateConnTV();
+                    }
+                }
+            }
+        }
+    };
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
@@ -359,7 +359,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             case REQUEST_ENABLE_BT: {
                 if (resultCode != Activity.RESULT_OK) {
                     Toast.makeText(this, "Could not enable Bluetooth.", Toast.LENGTH_SHORT).show();
-                    connectToggleBtn.setChecked(false);
                 } else {
                     Toast.makeText(this, "Bluetooth enabled.", Toast.LENGTH_SHORT).show();
                 }
@@ -384,14 +383,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     Log.d(TAG, "X: " + xCoord + ", Y: " + yCoord + ", Type: " + type);
 
                     if (type.equals("wayPoint")) {
-                        wayPointXCoord = Integer.toString(xCoord);
-                        wayPointYCoord = Integer.toString(yCoord);
+                        mWayPointXCoord = Integer.toString(xCoord);
+                        mWayPointYCoord = Integer.toString(yCoord);
                         ;
                         sendWayPoint(xCoord, yCoord);
                         updateWayPointTV();
                     } else {
-                        startCoordinateXCoord = Integer.toString(xCoord);
-                        startCoordinateYCoord = Integer.toString(yCoord);
+                        mStartCoordinateXCoord = Integer.toString(xCoord);
+                        mStartCoordinateYCoord = Integer.toString(yCoord);
                         sendStartCoordinates(xCoord, yCoord);
                         updateStartCoordinatesTV();
                     }
@@ -403,18 +402,18 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(getString(R.string.string_f1_key))) {
-            f1String = sharedPreferences.getString(getString(R.string.string_f1_key), getString(R.string.defaultValue_f1));
+            mF1String = sharedPreferences.getString(getString(R.string.string_f1_key), getString(R.string.defaultValue_f1));
         }
         if (key.equals(getString(R.string.string_f2_key))) {
-            f2String = sharedPreferences.getString(getString(R.string.string_f2_key), getString(R.string.defaultValue_f2));
+            mF2String = sharedPreferences.getString(getString(R.string.string_f2_key), getString(R.string.defaultValue_f2));
         }
     }
 
     private void setupPreferenceStrings() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        f1String = sharedPreferences.getString(getString(R.string.string_f1_key), getString(R.string.defaultValue_f1));
-        f2String = sharedPreferences.getString(getString(R.string.string_f2_key), getString(R.string.defaultValue_f2));
+        mF1String = sharedPreferences.getString(getString(R.string.string_f1_key), getString(R.string.defaultValue_f1));
+        mF2String = sharedPreferences.getString(getString(R.string.string_f2_key), getString(R.string.defaultValue_f2));
 
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
@@ -476,11 +475,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     public void sendF1() {
-        writeOnOutputStream(f1String);
+        writeOnOutputStream(mF1String);
     }
 
     public void sendF2() {
-        writeOnOutputStream(f2String);
+        writeOnOutputStream(mF2String);
     }
 
     public void startExploration() {
@@ -501,22 +500,22 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private void updateConnTV() {
         if (mBTDevice != null) {
-            connDeviceTV.setText("Connected Device: " + mBTDevice.getName().toString());
-            connDeviceTV.setVisibility(View.VISIBLE);
+            mConnDeviceTV.setText("Connected Device: " + mBTDevice.getName().toString());
+            mConnDeviceTV.setVisibility(View.VISIBLE);
         } else {
-            connDeviceTV.setText("Connected Device:");
-            connDeviceTV.setVisibility(View.INVISIBLE);
+            mConnDeviceTV.setText("Connected Device:");
+            mConnDeviceTV.setVisibility(View.INVISIBLE);
         }
     }
 
     private void updateWayPointTV() {
-        wayPointXCoordTV.setText("X: " + wayPointXCoord);
-        wayPointYCoordTV.setText("Y: " + wayPointYCoord);
+        mWayPointXCoordTV.setText("X: " + mWayPointXCoord);
+        mWayPointYCoordTV.setText("Y: " + mWayPointYCoord);
     }
 
     private void updateStartCoordinatesTV() {
-        startCoordinateXCoordTV.setText("X: " + startCoordinateXCoord);
-        startCoordinateYCoordTV.setText("Y: " + startCoordinateYCoord);
+        mStartCoordinateXCoordTV.setText("X: " + mStartCoordinateXCoord);
+        mStartCoordinateYCoordTV.setText("Y: " + mStartCoordinateYCoord);
     }
 
     @Override
