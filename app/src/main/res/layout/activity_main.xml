@@ -40,10 +40,10 @@
 
             <Button
                 android:id="@+id/maze_update"
+                android:enabled="false"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="askForGrid"
-                android:text="update" />
+                android:text="Update" />
 
             <TextView
                 android:id="@+id/connected_device"
@@ -93,18 +93,33 @@
                 android:layout_below="@id/start_coordinate_x" />
 
             <TextView
-                android:id="@+id/robot_status_title"
+                android:id="@+id/exploration_time_title_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/start_coordinate_y"
                 android:layout_marginTop="10dp"
-                android:text="@string/robot_status_title" />
+                android:text="@string/exploration_time" />
 
             <TextView
-                android:id="@+id/robot_status"
+                android:id="@+id/exploration_time_tv"
+                android:text="00:00:00"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/robot_status_title" />
+                android:layout_below="@id/exploration_time_title_tv" />
+
+            <TextView
+                android:id="@+id/fastest_path_time_title_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/exploration_time_tv"
+                android:layout_marginTop="10dp"
+                android:text="@string/fastest_path_time" />
+            <TextView
+                android:id="@+id/fastest_path_time_tv"
+                android:text="00:00:00"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/fastest_path_time_title_tv" />
         </RelativeLayout>
     </LinearLayout>
 
@@ -156,17 +171,37 @@
                 android:layout_marginBottom="23dp"
                 android:layout_marginStart="109dp"
                 android:rotation="-25"
-                android:text="@string/auto" />
+                android:text="@string/manual" />
 
-            <ImageView
-                android:id="@+id/ab_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <!--<ImageView-->
+                <!--android:id="@+id/ab_btn"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_alignParentTop="true"-->
+                <!--android:layout_marginStart="50dp"-->
+                <!--android:layout_marginTop="10dp"-->
+                <!--android:layout_toEndOf="@id/select_btn"-->
+                <!--app:srcCompat="@drawable/ab_button" />-->
+            <Button
+                android:id="@+id/start_exploration"
+                android:text="Exploration"
+                android:onClick="startExploration"
                 android:layout_alignParentTop="true"
                 android:layout_marginStart="50dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="50dp"
                 android:layout_toEndOf="@id/select_btn"
-                app:srcCompat="@drawable/ab_button" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/start_shortest_path"
+                android:onClick="startShortestPath"
+                android:text="Shortest Path"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="50dp"
+                android:layout_marginTop="100dp"
+                android:layout_toEndOf="@id/select_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
         </RelativeLayout>
 

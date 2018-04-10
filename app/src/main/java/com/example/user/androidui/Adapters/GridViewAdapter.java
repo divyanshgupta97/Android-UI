@@ -3,36 +3,30 @@ package com.example.user.androidui.Adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.user.androidui.CoordinatesSelectionService;
 import com.example.user.androidui.MainActivity;
 import com.example.user.androidui.R;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class GridViewAdapter extends BaseAdapter {
 
-    private Toast mToast;
     private Context mContext;
     private int mNumRows;
     private int mNumCols;
     private ArrayList<Character> mMapDescriptor;
 
-    public static final char UNEXPLORED = '0';
-    public static final char FREE  ='1';
-    public static final char OBSTACLE = '2';
-    public static final char ROBOT_HEAD = '3';
-    public static final char ROBOT_BODY = '4';
+    private static final char FREE  ='1';
+    private static final char OBSTACLE = '2';
+    private static final char ROBOT_HEAD = '3';
+    private static final char ROBOT_BODY = '4';
 
     public GridViewAdapter(Context context, int numRows, int numCols, ArrayList<Character> mapDescriptor){
         mContext = context;
@@ -63,14 +57,18 @@ public class GridViewAdapter extends BaseAdapter {
             currentView = LayoutInflater.from(mContext).inflate(R.layout.cell_layout,parentViewGroup, false);
         }
 
+        final int xCoord = index % mNumCols;
+        final int yCoord = index / mNumCols;
+
+        TextView cellTV = (TextView) currentView.findViewById(R.id.tv_cell);
+        cellTV.setText(Integer.toString(xCoord) + ", " + Integer.toString(yCoord));
+
         char cellStatus = (char) getItem(index);
-        setColor(currentView, cellStatus);
+        setCellColor(currentView, cellStatus);
 
         currentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int xCoord = index % mNumCols;
-                int yCoord = index / mNumCols;
 
                 Intent messageIntent = new Intent(mContext, CoordinatesSelectionService.class);
                 messageIntent.putExtra("X", xCoord);
@@ -82,7 +80,7 @@ public class GridViewAdapter extends BaseAdapter {
         return currentView;
     }
 
-    private void setColor(View view, char cellStatus){
+    private void setCellColor(View view, char cellStatus){
 
         switch(cellStatus){
             case FREE:

@@ -167,6 +167,9 @@ public class BluetoothPairingService extends Activity {
                 if(mBTPairedDevices.contains((BluetoothDevice) bluetoothDevice) || mBTDiscoveredDevices.contains((BluetoothDevice) bluetoothDevice))
                     return;
 
+                if(mDiscoveredDevicesArrayAdapter.getCount() == 0){
+                    mDiscoveredDevicesArrayAdapter.clear();
+                }
                 mBTDiscoveredDevices.add(bluetoothDevice);
                 Log.d(TAG, "onReceive: " + bluetoothDevice.getName() + ": " + bluetoothDevice.getAddress());
                 mDiscoveredDevicesArrayAdapter.add(bluetoothDevice.getName() + "\n" + bluetoothDevice.getAddress());

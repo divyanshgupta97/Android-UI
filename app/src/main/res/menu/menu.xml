@@ -6,6 +6,11 @@
         android:title="@string/action_chat"
         app:showAsAction="ifRoom"/>
     <item
+        android:id="@+id/action_display_descriptor_strings"
+        android:title="@string/action_display_descriptor"
+        app:showAsAction="ifRoom"
+        />
+    <item
         android:id="@+id/action_reconfigure"
         android:title="@string/action_reconfigure"
         app:showAsAction="never"/>

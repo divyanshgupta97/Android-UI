@@ -41,7 +41,8 @@ public class BluetoothChatService extends AppCompatActivity {
         mConversationArrayAdapter = new ArrayAdapter<String>(this, R.layout.message);
         mConversationView.setAdapter(mConversationArrayAdapter);
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(mIncomingMessageReceiver, new IntentFilter("incomingMessage"));
+        LocalBroadcastManager.getInstance(this).
+                registerReceiver(mIncomingMessageReceiver, new IntentFilter("incomingMessage"));
     }
 
     @Override

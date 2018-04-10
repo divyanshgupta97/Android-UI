@@ -108,7 +108,7 @@ public class BluetoothConnectionService {
 
             try {
                 Log.d(TAG, "ConnectThread: Trying to create InsecureRfcommSocket using UUID: "
-                        +MY_UUID_INSECURE );
+                        + MY_UUID_INSECURE );
                 tmp = mBTDevice.createRfcommSocketToServiceRecord(mBTDeviceUUID);
             } catch (IOException e) {
                 Log.e(TAG, "ConnectThread: Could not create InsecureRfcommSocket " + e.getMessage());

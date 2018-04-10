@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private GridAxisAdapter mXAxisAdapter;
     private GridAxisAdapter mYAxisAdapter;
 
-    private Button gridUpdateBtn;
+    private Button mGridUpdateBtn;
 
     private String mF1String;
     private String mF2String;
@@ -68,13 +68,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private String mWayPointYCoord;
     private String mStartCoordinateXCoord;
     private String mStartCoordinateYCoord;
+    private String mDescriptorStringOne;
+    private String mDescriptorStringTwo;
+    private String mExplorationTime;
+    private String mFastestPathTime;
 
     private TextView mConnDeviceTV;
-    private TextView mRobotStatusTV;
     private TextView mWayPointXCoordTV;
     private TextView mWayPointYCoordTV;
     private TextView mStartCoordinateXCoordTV;
     private TextView mStartCoordinateYCoordTV;
+    private TextView mExplorationTimeTV;
+    private TextView mFastestPathTimeTV;
+    //    private TextView mRobotStatusTV;
 
     private BluetoothAdapter mBTAdapter;
     private BluetoothDevice mBTDevice;
@@ -86,18 +92,27 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private Toast mToast;
     private Boolean isAuto = true;
-    private TextView connectTV;
-    private TextView autoTV;
+    private TextView mConnectTV;
+    private TextView mAutoTV;
 
     private ArrayList<Character> mMapDescriptor;
-    private static final String MAP_DESCRIPTOR_STRING = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000434000000000000444000000000000444000000000000";
+    private static final String DEFAULT_MAP_DESCRIPTOR_STRING = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000434000000000000444000000000000444000000000000";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mMapDescriptor = Utils.getMapDescriptor(DEFAULT_MAP_DESCRIPTOR_STRING);
+
+        mStartCoordinateXCoord = "0";
+        mStartCoordinateYCoord = "19";
+        mWayPointXCoord = "_";
+        mWayPointYCoord = "_";
+
         mGridView = (GridView) findViewById(R.id.maze);
+        mGridViewAdapter = new GridViewAdapter(MainActivity.this, NUM_ROWS, NUM_COLS, mMapDescriptor);
+
         mXAxis = (GridView) findViewById(R.id.x_axis);
         mYAxis = (GridView) findViewById(R.id.y_axis);
 
@@ -105,9 +120,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         mXAxis.setNumColumns(NUM_COLS);
         mYAxis.setNumColumns(1);
 
-        mMapDescriptor = Utils.getMapDescriptor(MAP_DESCRIPTOR_STRING);
-
-        mGridViewAdapter = new GridViewAdapter(MainActivity.this, NUM_ROWS, NUM_COLS, mMapDescriptor);
         mXAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_COLS);
         mYAxisAdapter = new GridAxisAdapter(MainActivity.this, NUM_ROWS);
 
@@ -116,37 +128,28 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         mYAxis.setAdapter(mYAxisAdapter);
 
         mConnDeviceTV = (TextView) findViewById(R.id.connected_device);
-        mRobotStatusTV = (TextView) findViewById(R.id.robot_status);
         mWayPointXCoordTV = (TextView) findViewById(R.id.waypoint_x);
         mWayPointYCoordTV = (TextView) findViewById(R.id.waypoint_y);
         mStartCoordinateXCoordTV = (TextView) findViewById(R.id.start_coordinate_x);
         mStartCoordinateYCoordTV = (TextView) findViewById(R.id.start_coordinate_y);
+        mExplorationTimeTV = (TextView) findViewById(R.id.exploration_time_tv);
+        mFastestPathTimeTV = (TextView) findViewById(R.id.fastest_path_time_tv);
+        //        mRobotStatusTV = (TextView) findViewById(R.id.robot_status);
 
-        gridUpdateBtn = (Button) findViewById(R.id.maze_update);
+        updateStartCoordinatesTV();
+        updateWayPointTV();
 
-        connectTV = (TextView) findViewById(R.id.tv_connect_btn);
-        autoTV = (TextView) findViewById(R.id.tv_auto_btn);
+        mGridUpdateBtn = (Button) findViewById(R.id.maze_update);
 
-        gridUpdateBtn.setOnClickListener(new View.OnClickListener() {
+        mConnectTV = (TextView) findViewById(R.id.tv_connect_btn);
+        mAutoTV = (TextView) findViewById(R.id.tv_auto_btn);
+
+        mGridUpdateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mGridViewAdapter.refreshMap(mMapDescriptor);
             }
         });
-
-//        TODO: Auto/Manual
-//        gridUpdateToggleBtn = (ToggleButton) findViewById(R.id.update_maze_toggle_btn);
-//        gridUpdateToggleBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-//                if(isChecked){
-//                    gridUpdateBtn.setVisibility(View.VISIBLE);
-//                }
-//                else {
-//                    gridUpdateBtn.setVisibility(View.INVISIBLE);
-//                }
-//            }
-//        });
 
         setupPreferenceStrings();
 
@@ -155,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
         this.registerReceiver(mBroadcastReceiver, intentFilter);
-//
+
 //        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 //        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
     }
@@ -167,11 +170,20 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             incomingMessage = incomingMessage.substring(4, incomingMessage.length());
 
             JSONObject messageJSON = Utils.getJSONObject(incomingMessage);
-            String mazeString = Utils.getJSONString(messageJSON, "maze");
+            String mazeString = Utils.getJSONString(messageJSON, "m");
+
+            if(!Utils.getJSONString(messageJSON, "d").equals(""))
+                mDescriptorStringOne = Utils.getJSONString(messageJSON, "d");
+            if(!Utils.getJSONString(messageJSON, "e").equals(""))
+                mDescriptorStringTwo = Utils.getJSONString(messageJSON, "e");
+
             mMapDescriptor = Utils.getMapDescriptor(mazeString);
-            mGridViewAdapter.refreshMap(mMapDescriptor);
+            if(isAuto && mMapDescriptor != null){
+                mGridViewAdapter.refreshMap(mMapDescriptor);
+            }
         }
     };
+
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -213,15 +225,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         Log.d(TAG, "onSensorChanged: X: " + x + ", onSensorChanged: Y: " + y);
 
-//        if(mToast != null)
-//            mToast.cancel();
 
         if (Math.abs(x) > Math.abs(y)) {
             if (x < -4) {
-//                mToast = Toast.makeText(this, "Right", Toast.LENGTH_SHORT);
-//                mToast.show();
                 Log.d(TAG, "Right");
-//                writeRight();
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -230,10 +237,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 }, 5000);
             }
             if (x > 4) {
-//                mToast = Toast.makeText(this, "Left", Toast.LENGTH_SHORT);
-//                mToast.show();
                 Log.d(TAG, "Left");
-//                writeLeft();
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -243,10 +247,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             }
         } else {
             if (y < -2) {
-//                mToast = Toast.makeText(this, "Forward", Toast.LENGTH_SHORT);
-//                mToast.show();
                 Log.d(TAG, "Forward");
-//                writeForward();
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -255,10 +256,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 }, 5000);
             }
             if (y > 4) {
-//                mToast = Toast.makeText(this, "Reverse", Toast.LENGTH_SHORT);
-//                mToast.show();
                 Log.d(TAG, "Reverse");
-//                writeReverse();
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -268,8 +266,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             }
         }
         if (x > (-4) && x < (4) && y > (-2) && y < (4)) {
-//            mToast = Toast.makeText(this, "Stable", Toast.LENGTH_SHORT);
-//            mToast.show();
             Log.d(TAG, "Stable");
         }
     }
@@ -347,6 +343,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 return true;
             }
 
+            case R.id.action_display_descriptor_strings: {
+                Intent displayDescriptorIntent = new Intent(MainActivity.this, DisplayDescriptorStringActivity.class);
+                displayDescriptorIntent.putExtra("descriptorStringOne", mDescriptorStringOne);
+                displayDescriptorIntent.putExtra("descriptorStringTwo", mDescriptorStringTwo);
+                startActivity(displayDescriptorIntent);
+                return true;
+            }
+
             default: {
                 return super.onOptionsItemSelected(menuItem);
             }
@@ -368,8 +372,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
             case REQUEST_DEVICE_CONNECT_INSECURE: {
                 if (resultCode == Activity.RESULT_OK) {
-
+                    mConnectTV.setText(R.string.disconnect);
                     initializeNewBTDevice(receivedIntent);
+                }
+                else{
+                    mConnectTV.setText(R.string.connect);
                 }
                 break;
             }
@@ -385,7 +392,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     if (type.equals("wayPoint")) {
                         mWayPointXCoord = Integer.toString(xCoord);
                         mWayPointYCoord = Integer.toString(yCoord);
-                        ;
+
                         sendWayPoint(xCoord, yCoord);
                         updateWayPointTV();
                     } else {
@@ -442,20 +449,28 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
+    public void startExploration(View view) {
+        writeOnOutputStream("a");
+    }
+
+    public void startShortestPath(View view) {
+        writeOnOutputStream("b");
+    }
+
     private void writeForward() {
-        writeOnOutputStream("f");
+        writeOnOutputStream("F");
     }
 
     private void writeLeft() {
-        writeOnOutputStream("tl");
+        writeOnOutputStream("L");
     }
 
     public void writeRight() {
-        writeOnOutputStream("tr");
+        writeOnOutputStream("R");
     }
 
     public void writeReverse() {
-        writeOnOutputStream("r");
+        writeOnOutputStream("REV");
     }
 
     public void sendForward() {
@@ -482,20 +497,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         writeOnOutputStream(mF2String);
     }
 
-    public void startExploration() {
-        writeOnOutputStream("startExploration");
-    }
-
-    public void startShortestPath() {
-        writeOnOutputStream("startShortestPath");
-    }
-
     private void sendStartCoordinates(int x, int y) {
-        writeOnOutputStream("startCoordinates(" + Integer.toString(x) + ", " + Integer.toString(y) + ")");
+        writeOnOutputStream("d(" + Integer.toString(x) + ", " + Integer.toString(y) + ")");
     }
 
     private void sendWayPoint(int x, int y) {
-        writeOnOutputStream("wayPoint(" + Integer.toString(x) + ", " + Integer.toString(y) + ")");
+        writeOnOutputStream("c(" + Integer.toString(x) + ", " + Integer.toString(y) + ")");
     }
 
     private void updateConnTV() {
@@ -518,6 +525,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         mStartCoordinateYCoordTV.setText("Y: " + mStartCoordinateYCoord);
     }
 
+    private void updateExplorationTime() {
+        mExplorationTimeTV.setText(mExplorationTime);
+    }
+
+    private void updateFastestPathTime(){
+        mFastestPathTimeTV.setText(mFastestPathTime);
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
         float x = motionEvent.getX();
@@ -526,60 +541,44 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             case MotionEvent.ACTION_DOWN:
                 if (mToast != null)
                     mToast.cancel();
-//                Toast.makeText(getApplicationContext(), "x = " + x + " y = " + y, Toast.LENGTH_SHORT).show();
+
                 if (x > 110 && x < 160 && y > 1000 && y < 1050) {
                     sendForward();
-//                    mToast = Toast.makeText(getApplicationContext(), "Forward", Toast.LENGTH_SHORT);
-//                    mToast.show();
                 }
                 if (x > 110 && x < 160 && y > 1100 && y < 1160) {
                     sendReverse();
-//                    mToast = Toast.makeText(getApplicationContext(), "Reverse", Toast.LENGTH_SHORT);
-//                    mToast.show();
                 }
                 if (x > 55 && x < 100 && y > 1050 && y < 1100) {
                     sendLeft();
-//                    mToast = Toast.makeText(getApplicationContext(), "Left", Toast.LENGTH_SHORT);
-//                    mToast.show();
                 }
                 if (x > 160 && x < 220 && y > 1050 && y < 1100) {
                     sendRight();
-//                    mToast = Toast.makeText(getApplicationContext(), "Right", Toast.LENGTH_SHORT);
-//                    mToast.show();
                 }
                 if (x > 300 && x < 375 && y > 1120 && y < 1170) {
-                    //TODO: Connect Bluetooth
                     if (mBTDevice == null) {
                         Intent bluetoothConnectIntent = new Intent(MainActivity.this, BluetoothPairingService.class);
                         startActivityForResult(bluetoothConnectIntent, REQUEST_DEVICE_CONNECT_INSECURE);
-                        connectTV.setText(R.string.disconnect);
                     } else {
                         stopBTConnection();
-                        connectTV.setText(R.string.connect);
                     }
                     return true;
                 }
                 if (x > 420 && x < 490 && y > 1120 && y < 1170) {
                     if (isAuto) {
                         isAuto = false;
-                        gridUpdateBtn.setEnabled(false);
-                        autoTV.setText(R.string.manual);
-
+                        mGridUpdateBtn.setEnabled(true);
+                        mAutoTV.setText(R.string.auto);
                     } else {
                         isAuto = true;
-                        gridUpdateBtn.setEnabled(true);
-                        autoTV.setText(R.string.auto);
+                        mGridUpdateBtn.setEnabled(false);
+                        mAutoTV.setText(R.string.manual);
                     }
                 }
                 if (x > 560 && x < 645 && y > 1050 && y < 1120) {
-                    startShortestPath();
-//                    mToast = Toast.makeText(getApplicationContext(), "Shortest", Toast.LENGTH_SHORT);
-//                    mToast.show();
+//                    startShortestPath();
                 }
                 if (x > 670 && x < 760 && y > 1000 && y < 1080) {
-                    startExploration();
-//                    mToast = Toast.makeText(getApplicationContext(), "Explore", Toast.LENGTH_SHORT);
-//                    mToast.show();
+//                    startExploration();
                 }
                 break;
         }
@@ -589,6 +588,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     public void startBTConnection(BluetoothDevice bluetoothDevice){
         Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
         ((BluetoothDelegate)this.getApplicationContext()).appBluetoothConnectionService
-                .startClient(bluetoothDevice,MY_UUID_INSECURE, this);
+                .startClient(bluetoothDevice, MY_UUID_INSECURE, this);
     }
 }

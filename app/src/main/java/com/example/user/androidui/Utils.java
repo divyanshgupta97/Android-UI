@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Utils {
@@ -35,6 +36,8 @@ public class Utils {
     }
 
     public static ArrayList<Character> getMapDescriptor(String mapDescriptorString){
+        if(mapDescriptorString.equals(""))
+            return null;
         ArrayList<Character> mapDescriptor = new ArrayList<Character>();
         for(int i = 0; i < mapDescriptorString.length(); ++i)
             mapDescriptor.add(mapDescriptorString.charAt(i));

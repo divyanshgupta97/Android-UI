@@ -52,5 +52,10 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo.Dialog"
             android:parentActivityName=".MainActivity"/>
+        <activity
+            android:name=".DisplayDescriptorStringActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Dialog"
+            android:parentActivityName=".MainActivity"/>
     </application>
 </manifest>
